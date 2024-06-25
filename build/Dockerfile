@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package.json /app/package.json
 
 RUN npm i
+RUN npm i vite
 
 COPY vite.config.js /app/vite.config.js
 COPY public /app/public
