@@ -178,6 +178,11 @@
         <a href="https://github.com/rubber-duckie-chainsaws/resume" class="repo-link">Repo</a>
       </template>
     </ProjectComponent>
+    <ProjectComponent projectName="Discord launcher">
+      <template #default>
+        <h4>Status: Planning</h4>
+      </template>
+    </ProjectComponent>
   </div>
 </template>
 
