@@ -6,7 +6,11 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 
-import { createMemoryHistory, createRouter } from 'vue-router'
+/**********************************\
+ *            Router              *
+ * TODO: Move to own package/file *
+\**********************************/
+import { createWebHistory, createRouter } from 'vue-router'
 import CoverView from '@/views/CoverView.vue'
 import InfraView from '@/views/InfraView.vue'
 import OpsView from '@/views/OpsView.vue'
@@ -18,8 +22,11 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes,
 })
 
-createApp(App).use(router).mount('#app')
+
+createApp(App)
+  .use(router)
+  .mount('#app')
