@@ -2,9 +2,10 @@
   <div class="row min-vh-100 h-100">
     <div class="col-lg col-sm-8 d-flex flex-column pb-2 order-sm-2 order-lg-1">
       <h1>Resume</h1>
-      <div class="embed-responsive flex-fill">
+      <PDFViewer :url="url" />
+      <!--<div class="embed-responsive flex-fill">
         <embed src="https://rdc-resume-content-20240619063922322800000001.s3.amazonaws.com/tmoss/resume.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWKF6C3BJKRQD2X5U%2F20240709%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240709T134229Z&X-Amz-Expires=259200&X-Amz-SignedHeaders=host&X-Amz-Signature=62815c9dbe53166cf6aa82c131e207e81d259a3ea718da9db03d257503568e6c" type="application/pdf" width="100%" height="90%"/>
-      </div>
+      </div>-->
     </div>
     <div class="col-lg col-sm-8 cover-letter order-sm-1 order-lg-2">
       <h1>About Me</h1>
@@ -17,8 +18,11 @@
   </div>
 </template>
 
-<script scoped>
+<script setup>
+  import { ref } from "vue"
+  import PDFViewer from '@/components/PDFViewer.vue'
 
+  const url = ref("https://rdc-resume-content-20240619063922322800000001.s3.amazonaws.com/tmoss/resume.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWKF6C3BJKRQD2X5U%2F20240709%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240709T134229Z&X-Amz-Expires=259200&X-Amz-SignedHeaders=host&X-Amz-Signature=62815c9dbe53166cf6aa82c131e207e81d259a3ea718da9db03d257503568e6c")
 </script>
 
 <style scoped>
