@@ -28,11 +28,12 @@ job "resume-webserver" {
       env {
         PORT = "${NOMAD_PORT_web}"
         DEPLOY_ENV="PRODUCTION"
+        ROOT = "/app"
       }
 
       template {
         data = <<EOF
-S3_BUCKET={{ with secret "kv/data/default/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
+S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
         EOF
 
         destination = "secrets/env"

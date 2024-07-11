@@ -90,7 +90,7 @@ func main() {
 	router.Get("/*", func(writer http.ResponseWriter, request *http.Request) {
 		var chunks map[string]Record
 
-		manifestFile, err := os.ReadFile(filepath.Join(root, "/dist/.vite/manifest.json"))
+		manifestFile, err := os.ReadFile(filepath.Join(root, "dist/.vite/manifest.json"))
 		if err != nil {
 			log.Fatal("Failed reading manifest.json", err)
 		}
