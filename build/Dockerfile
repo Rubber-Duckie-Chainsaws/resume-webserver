@@ -2,6 +2,8 @@ FROM golang:1.22-alpine as go
 
 WORKDIR /src
 COPY cmd /src/cmd
+COPY go.mod /src/go.mod
+COPY go.sum /src/go.sum
 
 RUN go build -o /src/webserver cmd/main.go
 
