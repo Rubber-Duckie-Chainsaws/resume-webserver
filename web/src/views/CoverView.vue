@@ -1,13 +1,10 @@
 <template>
-  <div class="row min-vh-100 h-100">
-    <div class="col-lg col-sm-8 d-flex flex-column pb-2 order-sm-2 order-lg-1">
+  <div class="min-vh-100 h-100 d-flex flex-column flex-lg-row">
+    <div class="d-flex flex-column pb-2 mx-4 order-sm-2 order-lg-1">
       <h1>Resume</h1>
       <PDFViewer :url="url" />
-      <!--<div class="embed-responsive flex-fill">
-        <embed src="https://rdc-resume-content-20240619063922322800000001.s3.amazonaws.com/tmoss/resume.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWKF6C3BJKRQD2X5U%2F20240709%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240709T134229Z&X-Amz-Expires=259200&X-Amz-SignedHeaders=host&X-Amz-Signature=62815c9dbe53166cf6aa82c131e207e81d259a3ea718da9db03d257503568e6c" type="application/pdf" width="100%" height="90%"/>
-      </div>-->
     </div>
-    <div class="col-lg col-sm-8 cover-letter order-sm-1 order-lg-2">
+    <div class="cover-letter mx-4 order-sm-1 order-lg-2">
       <h1>About Me</h1>
       <p>My name is Tipene, and I am a software developer with a focus on ops, IAC and dev tooling. My passion is helping to empower my peers to be able to do their best work. Given that my core skills are not front-end or otherwise immediately self-evident, this page serves to provide <RouterLink to="/infra">a breakdown of some of the behind the scenes moving pieces</RouterLink> with accompanying github links for those who are curious. Thank you for taking the time to view my portfolio, which I've worked hard to put together to showcase my abilities.</p>
       <p>My journey to developer tooling has been one of self-discovery, as my initial career aspirations were more in line with that of a full stack web developer. Eventually I actually got my chance on a small, 4-man dev team. It was there the value of having someone looking after the tooling and build processes practically jumped off the page at me, allowing devs to focus on shipping products, and not fighting with how to get it out into production each release. Sensing an opportunity I dove straight in, sparking a passion for building something my colleagues could depend on, and whittling away at instability and uncertainty.</p>
@@ -22,7 +19,7 @@
   import { ref } from "vue"
   import PDFViewer from '@/components/PDFViewer.vue'
 
-  const url = ref("https://rdc-resume-content-20240619063922322800000001.s3.amazonaws.com/tmoss/resume.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAWKF6C3BJKRQD2X5U%2F20240709%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20240709T134229Z&X-Amz-Expires=259200&X-Amz-SignedHeaders=host&X-Amz-Signature=62815c9dbe53166cf6aa82c131e207e81d259a3ea718da9db03d257503568e6c")
+  const url = ref("/static/tmoss/resume.pdf")
 </script>
 
 <style scoped>

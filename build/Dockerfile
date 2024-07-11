@@ -1,17 +1,32 @@
-FROM node:lts
+FROM golang:1.22-alpine as go
+
+WORKDIR /src
+COPY cmd /src/cmd
+
+RUN go build -o /src/webserver cmd/main.go
+
+FROM node:lts AS node
 
 RUN mkdir /app
 WORKDIR /app
-COPY package.json /app/package.json
+COPY web/package.json /app/package.json
 
 RUN npm i
-RUN npm i vite
 
-COPY vite.config.js /app/vite.config.js
-COPY public /app/public
-COPY index.html /app/index.html
-COPY src /app/src
+COPY web/vite.config.js /app/vite.config.js
+COPY web/public /app/public
+COPY web/src /app/src
 
 RUN npm run build
 
-CMD ["npx", "vite --host"]
+FROM alpine
+WORKDIR /app
+COPY --from=go /src/webserver /app/webserver
+COPY --from=node /app/dist /app/dist
+COPY web/index.html /app/index.html
+
+ENV PORT=3000
+ENV DEPLOY_ENV="DEVELOPMENT"
+ENV ROOT="/app"
+
+CMD ["/app/webserver"]

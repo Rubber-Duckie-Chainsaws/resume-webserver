@@ -16,14 +16,17 @@
 </script>
 
 <template>
-<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="/">Tipene Moss</a>
-    <div class="collapse navbar-collapse" id="navbarCollapse">
-      <ul class="navbar-nav me-auto mb-2 mb-md-0">
-        <RouterLink class="nav-item" to="/">Cover</RouterLink>
-        <RouterLink class="nav-item" to="/infra">Behind The Cover</RouterLink>
-        <RouterLink class="nav-item" to="/ops">Peep thru the Glass</RouterLink>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav">
+        <li class="nav-item"><RouterLink class="nav-link" to="/">Cover</RouterLink></li>
+        <li class="nav-item"><RouterLink class="nav-link" to="/infra">Behind The Cover</RouterLink></li>
+        <li class="nav-item"><RouterLink class="nav-link" to="/ops">Peep thru the Glass</RouterLink></li>
       </ul>
     </div>
   </div>

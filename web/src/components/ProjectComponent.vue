@@ -14,7 +14,6 @@
 
 <script setup>
 const props = defineProps(['projectName'])
-import { ref, onMounted } from 'vue'
 </script>
 
 <style scoped>

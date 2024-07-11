@@ -2,12 +2,19 @@
 <html lang="en" class="h-100">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/public/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Tipene Moss -- Resume Portfolio</title>
   </head>
   <body class="d-flex flex-column bg-secondary">
     <div id="app" class="container-fluid"></div>
-    <script type="module" src="/src/main.js"></script>
+    {{if eq .Deploy "DEVELOPMENT"}}
+    <script type="module" src="http://localhost:5173/@vite/client"></script>
+    <script type="module" src="http://localhost:5173/src/main.js"></script>
+    {{else}}
+    {{ range .Links }}
+    {{.}}
+    {{end}}
+    {{end}}
   </body>
 </html>
