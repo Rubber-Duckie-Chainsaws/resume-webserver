@@ -115,7 +115,7 @@ func main() {
 			Deploy: deployEnv,
 			Links:  allLinks,
 		}
-		indexTemplate, _ := template.ParseFiles(filepath.join(root, "index.html"))
+		indexTemplate, _ := template.ParseFiles(filepath.Join(root, "index.html"))
 		err = indexTemplate.Execute(writer, data)
 		if err != nil {
 			log.Fatal(err)
