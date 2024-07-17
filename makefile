@@ -1,6 +1,6 @@
 .PHONY: build
 build:
-	go build -o bin/webserver cmd/main.go
+	go build -o bin/webserver cmd/*.go
 
 webserver:
 	cd web; npm run build

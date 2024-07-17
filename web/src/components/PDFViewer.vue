@@ -1,5 +1,5 @@
 <template>
-  <div class="position-relative canvasWrapper">
+  <div ref="canvasWrapper" class="position-relative canvasWrapper">
     <nav class="position-absolute top-0 start-0 w-100 navbar navbar-expand-sm bg-body-secondary interface">
       <div class="container-fluid">
         <button class="btn btn-primary" @click="prevPage">
@@ -11,7 +11,7 @@
         </button>
       </div>
     </nav>
-    <canvas ref="pdfCanvas"></canvas>
+    <canvas class="w-100 h-100" ref="pdfCanvas"></canvas>
   </div>
 </template>
 
@@ -20,18 +20,27 @@
     url: String
   })
 
-  import { ref, onMounted, watch } from "vue"
+  import { ref, onMounted, onUnmounted, watch } from "vue"
   import * as pdfjsLib from "pdfjs-dist"
   import "pdfjs-dist/build/pdf.worker"
 
   const pdfCanvas = ref(null)
+  const canvasWrapper = ref(null)
   let pdf = null
   const currentPage = ref(1)
   const totalPages = ref(0)
 
+  const resizeObserver = new ResizeObserver(() => {
+    getPage()
+  })
+
   onMounted(() => {
     const loadingTask = pdfjsLib.getDocument(props.url)
     loadingTask.promise.then(handlePdf)
+  })
+
+  onUnmounted(() => {
+    resizeObserver.disconnect()
   })
 
   watch(currentPage, getPage)
@@ -48,17 +57,23 @@
     }
   }
 
+
   function handlePage(page) {
-    const scale = 1.5
-    const viewport = page.getViewport({ scale: scale })
-    const outputScale = window.devicePixelRatio || 1
+    var desiredWidth = canvasWrapper.value.clientWidth
+    var viewport = page.getViewport({ scale: 1, });
+    var scale = desiredWidth / viewport.width;
+    var scaledViewport = page.getViewport({ scale: scale, });
+
+    //const viewport = page.getViewport({scale: pdfCanvas.value.width / page.getViewport({scale: 1}).width});
+    //const outputScale = window.devicePixelRatio || 1
+    const outputScale = 1
 
     const context = pdfCanvas.value.getContext('2d')
 
-    pdfCanvas.value.width = Math.floor(viewport.width * outputScale)
-    pdfCanvas.value.height = Math.floor(viewport.height * outputScale)
-    pdfCanvas.value.style.width = Math.floor(viewport.width) + "px"
-    pdfCanvas.value.style.height = Math.floor(viewport.height) + "px"
+    pdfCanvas.value.width = Math.floor(scaledViewport.width * outputScale)
+    pdfCanvas.value.height = Math.floor(scaledViewport.height * outputScale)
+    pdfCanvas.value.style.width = Math.floor(scaledViewport.width) + "px"
+    pdfCanvas.value.style.height = Math.floor(scaledViewport.height) + "px"
 
     const transform = outputScale !== 1
       ? [outputScale, 0, 0, outputScale, 0, 0]
@@ -67,7 +82,7 @@
     const renderContext = {
       canvasContext: context,
       transform: transform,
-      viewport: viewport
+      viewport: scaledViewport
     }
     page.render(renderContext)
   }
@@ -81,6 +96,7 @@
     totalPages.value = pdf.numPages
     currentPage.value = 1
     getPage()
+    resizeObserver.observe(pdfCanvas.value)
   }
 </script>
 

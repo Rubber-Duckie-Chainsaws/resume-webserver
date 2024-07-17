@@ -17,6 +17,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import CoverView from '@/views/CoverView.vue'
 import InfraView from '@/views/InfraView.vue'
 import Topology from '@/views/infra/Topology.vue'
+import Nomad from '@/views/infra/Nomad.vue'
 import GHAAutoscaler from '@/views/infra/GHAAutoscaler.vue'
 import Resume from '@/views/infra/Resume.vue'
 import OpsView from '@/views/OpsView.vue'
@@ -28,10 +29,10 @@ const routes = [
     component: InfraView,
     children: [
       {
-        path: '', component: Topology
+        path: '', component: Topology, alias: ['topology']
       },
       {
-        path: 'topology', component: Topology
+        path: 'nomad', component: Nomad
       },
       {
         path: 'gha', component: GHAAutoscaler

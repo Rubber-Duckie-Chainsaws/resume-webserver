@@ -68,7 +68,7 @@
     "payload": Object,
   })
 
-  import { ref, computed, onMounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted } from 'vue'
 
   import User from '@/components/d3/User.vue'
   import System from '@/components/d3/System.vue'
@@ -148,6 +148,10 @@
         .scale(_width/graphicWidth);
     svg.call(zoom.transform, centered);
     simulation.value = getSimulation()
+  })
+
+  onUnmounted(() => {
+    resizeObserver.disconnect()
   })
 
   function debounce(fn, delay) {

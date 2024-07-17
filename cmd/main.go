@@ -1,22 +1,16 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
+	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-co-op/gocron/v2"
+	"istio.io/pkg/cache"
 )
 
 const defaultPort string = "3000"
@@ -34,8 +28,17 @@ type Record struct {
 	IsDynamicEntry bool
 }
 
-func main() {
+type Config struct {
+	Port      string
+	DeployEnv string
+	Root      string
+}
 
+var serverConfig Config
+
+var memoryCache cache.ExpiringCache
+
+func setServerConfigs() Config {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -51,139 +54,45 @@ func main() {
 		root = defaultRoot
 	}
 
-	router := chi.NewRouter()
-	router.Use(middleware.Logger)
-
-	// These routes are only needed for vite dev
-	fileServer := http.FileServer(http.Dir(filepath.Join(root, "src")))
-	router.Handle("/src/*", http.StripPrefix("/src/", fileServer))
-	nodeModulesFileServer := http.FileServer(http.Dir(filepath.Join(root, "node_modules")))
-	router.Get("/node_modules/*", func(writer http.ResponseWriter, request *http.Request) {
-		request.URL.RawQuery = ""
-		handler := http.StripPrefix("/node_modules/", nodeModulesFileServer)
-		handler.ServeHTTP(writer, request)
-	})
-	router.Get("/static/*", func(writer http.ResponseWriter, request *http.Request) {
-		cfg, err := config.LoadDefaultConfig(context.TODO())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		bucket := os.Getenv("S3_BUCKET")
-		key := request.URL.Path[len("/static/"):]
-		client := s3.NewFromConfig(cfg)
-		presignClient := s3.NewPresignClient(client)
-
-		req, err := presignClient.PresignGetObject(context.TODO(), &s3.GetObjectInput{
-			Bucket: aws.String(bucket),
-			Key:    aws.String(key),
-		})
-
-		h := http.RedirectHandler(req.URL, http.StatusFound)
-		h.ServeHTTP(writer, request)
-	})
-
-	publicFileServer := http.FileServer(http.Dir(filepath.Join(root, "dist/")))
-	router.Handle("/public/*", http.StripPrefix("/public/", publicFileServer))
-	assetsFileServer := http.FileServer(http.Dir(filepath.Join(root, "dist/assets")))
-	router.Handle("/assets/*", http.StripPrefix("/assets/", assetsFileServer))
-	router.Get("/*", func(writer http.ResponseWriter, request *http.Request) {
-		var chunks map[string]Record
-
-		manifestFile, err := os.ReadFile(filepath.Join(root, "dist/.vite/manifest.json"))
-		if err != nil {
-			log.Fatal("Failed reading manifest.json", err)
-		}
-		err = json.Unmarshal(manifestFile, &chunks)
-
-		var entries []string
-		for k, v := range chunks {
-			if v.IsEntry {
-				entries = append(entries, k)
-			}
-		}
-
-		var allLinks []template.HTML
-		for _, entryName := range entries {
-			links := prepEntryPoint(entryName, chunks)
-			allLinks = append(allLinks, links...)
-		}
-		data := struct {
-			Deploy string
-			Links  []template.HTML
-		}{
-			Deploy: deployEnv,
-			Links:  allLinks,
-		}
-		indexTemplate, _ := template.ParseFiles(filepath.Join(root, "index.html"))
-		err = indexTemplate.Execute(writer, data)
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
-	http.ListenAndServe(fmt.Sprintf(":%s", port), router)
+	return Config{
+		Port:      port,
+		Root:      root,
+		DeployEnv: deployEnv,
+	}
 }
 
-func prepEntryPoint(entryPoint string, manifest map[string]Record) []template.HTML {
-	entry := manifest[entryPoint]
-	var links []template.HTML
-	for _, css := range entry.Css {
-		links = append(links, template.HTML(fmt.Sprintf("<link rel=\"stylesheet\" href=\"/%s\" />", css)))
+func main() {
+	serverConfig = setServerConfigs()
+
+	memoryCache = cache.NewTTL(4*time.Minute,
+		5*time.Second)
+
+	router := chi.NewRouter()
+	router.Use(middleware.Logger)
+	if serverConfig.DeployEnv == "PRODUCTION" {
+		ProdRoutes(router)
+	} else {
+		DevRoutes(router)
 	}
 
-	children := getChildren(entryPoint, manifest)
-	for _, childName := range children {
-		for _, childCss := range manifest[childName].Css {
-			links = append(links, template.HTML(fmt.Sprintf("<link rel=\"stylesheet\" href=\"/%s\" />", childCss)))
-		}
-	}
-
-	isJS, err := checkFiletype(entry.File)
+	updateS3Link()
+	s, err := gocron.NewScheduler()
 	if err != nil {
 		log.Fatal(err)
 	}
-	if isJS {
-		links = append(links, template.HTML(fmt.Sprintf("<script type=\"module\" src=\"/%s\"></script>", entry.File)))
-	} else {
-		links = append(links, template.HTML(fmt.Sprintf("<link rel=\"stylesheet\" href=\"/%s\" />", entry.File)))
-	}
 
-	for _, childName := range children {
-		links = append(links, template.HTML(fmt.Sprintf("<link rel=\"modulepreload\" href=\"/%s\" />", manifest[childName].File)))
+	_, err = s.NewJob(
+		gocron.DurationJob(2*time.Hour),
+		gocron.NewTask(updateS3Link),
+	)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return links
+	s.Start()
+	http.ListenAndServe(fmt.Sprintf(":%s", serverConfig.Port), router)
 }
 
-func getChildren(name string, manifest map[string]Record) []string {
-	var children []string
-	fetching := true
-	inquiry := []string{name}
-	for fetching {
-		var newChildren []string
-		for _, lookup := range inquiry {
-			newChildren = append(newChildren, manifest[lookup].Imports...)
-		}
-		if len(newChildren) == 0 {
-			fetching = false
-		} else {
-			children = append(children, newChildren...)
-			inquiry = newChildren
-		}
-	}
-	return children
-}
-
-func checkFiletype(name string) (bool, error) {
-	lastDot := strings.LastIndex(name, ".")
-	if lastDot == -1 {
-		return false, errors.New("No . in given filename")
-	}
-	subString := name[lastDot+1:]
-	if subString == "js" {
-		return true, nil
-	} else if subString == "css" {
-		return false, nil
-	} else {
-		return false, errors.New("Neither js nor css file passed in")
-	}
+func updateS3Link() {
+	key := "tmoss/resume.pdf"
+	memoryCache.Set(fmt.Sprintf("s3-%s", key), presignS3Link(key))
 }

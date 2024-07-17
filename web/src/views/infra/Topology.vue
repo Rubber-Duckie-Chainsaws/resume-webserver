@@ -1,5 +1,7 @@
 <template>
+  <div>
     <D3 :payload="json_data" />
+  </div>
 </template>
 
 <script setup>
