@@ -1,11 +1,14 @@
 FROM golang:1.22-alpine as go
 
+RUN apk update && apk add --no-cache gcc libc-dev make
+
 WORKDIR /src
-COPY cmd /src/cmd
 COPY go.mod /src/go.mod
 COPY go.sum /src/go.sum
+COPY cmd /src/cmd
+COPY makefile /src/makefile
 
-RUN go build -o /src/webserver cmd/main.go
+RUN make build
 
 FROM node:lts AS node
 
