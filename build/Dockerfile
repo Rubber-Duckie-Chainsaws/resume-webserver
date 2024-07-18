@@ -26,7 +26,7 @@ RUN npm run build
 
 FROM alpine
 WORKDIR /app
-COPY --from=go /src/webserver /app/webserver
+COPY --from=go /src/bin/webserver /app/webserver
 COPY --from=node /app/dist /app/dist
 COPY web/index.html /app/index.html
 
