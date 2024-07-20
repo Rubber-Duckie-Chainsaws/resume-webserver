@@ -1,11 +1,12 @@
 import 'bootstrap/js/dist/button'
-import 'bootstrap/js/dist/modal'
 import 'bootstrap/js/dist/collapse'
+import 'bootstrap/js/dist/modal'
+import 'bootstrap/js/dist/offcanvas'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 import { createApp } from 'vue'
-import './style.css'
+import '@/styles/base.css'
 import App from './App.vue'
 import 'vite/modulepreload-polyfill'
 
@@ -21,6 +22,7 @@ import Nomad from '@/views/infra/Nomad.vue'
 import GHAAutoscaler from '@/views/infra/GHAAutoscaler.vue'
 import Resume from '@/views/infra/Resume.vue'
 import OpsView from '@/views/OpsView.vue'
+import Themer from '@/views/Themer.vue'
 
 const routes = [
   { path: '/', component: CoverView },
@@ -43,6 +45,7 @@ const routes = [
     ]
   },
   { path: '/ops', component: OpsView },
+  { path: '/themer', component: Themer },
 ]
 
 const router = createRouter({
@@ -52,6 +55,15 @@ const router = createRouter({
   routes,
 })
 
+
+/**********************************\
+ *           Showdown             *
+ * TODO: Move to own package/file *
+\**********************************/
+
+import PrimeVue from 'primevue/config'
+
+
 /**********************************\
  *           Showdown             *
  * TODO: Move to own package/file *
@@ -60,6 +72,7 @@ import { VueShowdownPlugin } from 'vue-showdown'
 
 createApp(App)
   .use(router)
+  .use(PrimeVue, {})
   .use(VueShowdownPlugin, {
     flavor: 'github',
   })

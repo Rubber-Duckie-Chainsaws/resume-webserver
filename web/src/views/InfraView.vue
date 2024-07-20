@@ -1,6 +1,6 @@
 <template>
   <div>
-    <nav class="navbar navbar-dark bg-dark px-4">
+    <nav class="navbar bg-secondary px-4">
       <h1 class="navbar-brand">Infra overview</h1>
       <nav class="nav nav-tabs">
         <RouterLink class="nav-link" to="/infra/topology">Cluster Topology</RouterLink>
