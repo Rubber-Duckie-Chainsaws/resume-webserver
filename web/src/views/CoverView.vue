@@ -27,7 +27,7 @@
     & p:first-of-type:first-letter {
       -webkit-initial-letter: 2;
       initial-letter: 2;
-      color: #660033;
+      color: var(--bs-primary);
     }
   }
 

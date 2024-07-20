@@ -1,0 +1,22 @@
+{
+  "name": "base-theme",
+  "description": "First test template",
+  "system": "true",
+  "version": "v1.0.0",
+  "colors": {
+    "--bs-body-color": "#ffffff",
+    "--bs-body-bg": "#008000",
+    "--bs-dark": "#ffc107",
+    "--bs-primary": "#0d6efd",
+    "--bs-secondary": "#6c757d",
+    "--bs-danger": "#dc3545",
+    "--bs-warning": "#ffc107",
+    "--bs-secondary-color": "#ffc107",
+    "--bs-secondary-bg": "#ffc107",
+    "--bs-tertiary-color": "#ffc107",
+    "--bs-tertiary-bg": "#ffc107",
+    "--bs-emphasis-color": "#ffc107",
+    "--bs-border-color": "#dc3545",
+    "--background-color": "#242424"
+  }
+}

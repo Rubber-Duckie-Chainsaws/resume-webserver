@@ -1,3 +1,9 @@
+@import "./xs.css";
+@import "./sm.css";
+@import "./md.css";
+@import "./lg.css";
+@import "./xl.css";
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -5,7 +11,8 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --background-color: #242424;
+  background-color: var(--background-color);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,9 +20,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+}
+
 a {
   font-weight: 500;
-  color: #646cff;
   text-decoration: inherit;
 }
 a:hover {
@@ -31,6 +40,9 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+h1,h2,h3 {
 }
 
 button {
@@ -64,17 +76,4 @@ button:focus-visible {
 #app {
   margin: 0;
   padding: 0;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

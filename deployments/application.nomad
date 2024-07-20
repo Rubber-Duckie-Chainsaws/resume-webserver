@@ -29,6 +29,7 @@ job "resume-webserver" {
         PORT = "${NOMAD_PORT_web}"
         DEPLOY_ENV="PRODUCTION"
         ROOT = "/app"
+        AWS_DEFAULT_REGION="us-east-1"
       }
 
       template {
