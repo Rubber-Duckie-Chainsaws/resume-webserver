@@ -1,12 +1,5 @@
-import 'bootstrap/js/dist/button'
-import 'bootstrap/js/dist/collapse'
-import 'bootstrap/js/dist/modal'
-import 'bootstrap/js/dist/offcanvas'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-icons/font/bootstrap-icons.css'
-
 import { createApp } from 'vue'
-import '@/styles/base.css'
+import '@/styles/global.css'
 import App from './App.vue'
 import 'vite/modulepreload-polyfill'
 
@@ -57,11 +50,12 @@ const router = createRouter({
 
 
 /**********************************\
- *           Showdown             *
+ *           PrimeVue             *
  * TODO: Move to own package/file *
 \**********************************/
 
 import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
 
 
 /**********************************\
@@ -72,7 +66,11 @@ import { VueShowdownPlugin } from 'vue-showdown'
 
 createApp(App)
   .use(router)
-  .use(PrimeVue, {})
+  .use(PrimeVue, {
+    theme: {
+      preset: Aura
+    }
+  })
   .use(VueShowdownPlugin, {
     flavor: 'github',
   })

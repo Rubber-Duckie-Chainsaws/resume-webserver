@@ -23,6 +23,6 @@ export default defineConfig({
     ],
   },
   server: {
-    origin: 'http://localhost:3000'
+    origin: 'http://10.0.0.68:3000'
   }
 })
