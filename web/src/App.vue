@@ -1,30 +1,39 @@
 <template>
-<nav class="navbar navbar-expand-md secondary-bg">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">Tipene Moss</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-      <ul class="navbar-nav">
-        <li class="nav-item"><RouterLink class="nav-link" to="/">Cover</RouterLink></li>
-        <li class="nav-item"><RouterLink class="nav-link" to="/infra">Behind The Cover</RouterLink></li>
-        <li class="nav-item"><RouterLink class="nav-link" to="/ops">Peep thru the Glass</RouterLink></li>
-        <li class="nav-item"><RouterLink class="nav-link" to="/themer">Make it look better</RouterLink></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+  <Header :links="appLinks">
+    <template #brand>
+      <a class="navbar-brand" href="/">Tipene Moss</a>
+    </template>
+  </Header>
 
 <!-- Begin page content -->
-<main class="container-fluid min-vh-100 mt-5">
+<main class="">
   <RouterView />
 </main>
 </template>
 
 <script setup>
   import { ref, onMounted, watch } from 'vue'
+  import Header from '@/components/Header.vue'
   import mermaid from 'mermaid'
+
+  const appLinks = [
+    {
+      name: "Cover",
+      route: "/"
+    },
+    {
+      name: "Behind the Cover",
+      route: "/infra"
+    },
+    {
+      name: "Peep thru the Glass",
+      route: "/ops"
+    },
+    {
+      name: "Make it look better",
+      route: "/themer"
+    }
+  ]
 
   onMounted(() => {
     mermaid.initialize({

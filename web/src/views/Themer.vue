@@ -1,57 +1,49 @@
 <template>
-  <div class="d-flex">
-    <aside>
-      <h1>Themerator</h1>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Purpose</th>
-            <th scope="col">Swatch</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Primary</td>
-            <td>The color of the main text</td>
-            <td>
-              <div class="p-3 rounded-2" style="background-color: var(--bs-body-color); border: 1px solid black;" @click="toggle">&nbsp;</div>
-              <Popover ref="test">
-                <div class="bg-light">
-                  <ColorPicker v-model="theme['--bs-body-color']" @change="updateColours" inline />
-                  <!--<input type="color" class="form-control form-control-color" @change="updateColours" v-model="theme['--bs-body-color']" ref="bs-body-color-select">-->
-                </div>
-              </popover>
-            </td>
-          </tr>
-          <tr>
-            <td>Background</td>
-            <td>The color of the background text</td>
-            <td><div class="p-3 rounded-2" style="background-color: var(--bs-body-bg); border: 1px solid black;">&nbsp;</div></td>
-          </tr>
-        </tbody>
-      </table>
-    </aside>
-    <main>
-      <nav class="navbar navbar-expand-md secondary-bg">
-        <div class="container-fluid">
-          <a class="navbar-brand" href="#">Brand link</a>
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTestSupportedContent" aria-controls="navbarTestSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarTestSupportedContent">
-            <ul class="navbar-nav">
-              <li class="nav-item"><a class="nav-link" href="#">Test link 1</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Test link 2</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Test link 3</a></li>
-              <li class="nav-item"><a class="nav-link" href="#">Test link 4</a></li>
-            </ul>
-          </div>
+  <div class="themer-grid">
+    <aside class="themer col">
+      <button
+          class="hamburger-toggle themerator-toggle"
+          style="width: 100px;"
+          aria-expanded="false"
+          @click="toggleThemer"
+          ref="themerToggle">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <div class="themer-popover">
+        <div>
+          <ColorWheel @colorSelected="colorChosen" :fields="R.map(R.prop('name'), newTheme)" :size="360"></ColorWheel>
         </div>
-      </nav>
+        <div @click="tableHovering = !tableHovering" @mouseover="tableHovering = true" @mouseleave="tableHovering = false">
+          {{ tableHovering }}
+          <table  class="table">
+            <thead>
+              <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Purpose</th>
+                <th scope="col">Swatch</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(themePart, idx) in newTheme">
+                <ColorPalette v-model="newTheme[idx]" :hovering="tableHovering">
+                </ColorPalette>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+    <main class="col-2 themed">
+      <Header class="secondary" :links="testLinks">
+        <template #brand>
+          <a class="navbar-brand" href="#">Brand link</a>
+        </template>
+      </Header>
       <h1>Sample webpage</h1>
-      <div class="row">
-        <div class="col-8">
+      <div class="content-grid">
+        <div class="">
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus iaculis risus non porta. Vestibulum faucibus lorem leo, eget euismod enim varius id. Nulla ultrices sapien non mattis placerat. Sed tincidunt turpis quis purus imperdiet, at scelerisque metus lacinia. Donec volutpat in orci id pellentesque. Etiam vestibulum lectus vel semper accumsan. Cras nibh metus, ultrices vel mollis nec, vulputate ut orci. Integer ut fringilla lorem. Maecenas aliquam, ligula sed volutpat hendrerit, libero sem aliquam justo, nec vulputate risus diam ac nisi. Ut eu diam mi.
           </p>
@@ -68,12 +60,14 @@
             In sem mi, ultricies nec metus pretium, interdum facilisis ex. Quisque in efficitur tortor, sed pellentesque sapien. Cras vel vulputate sapien. Etiam in dui turpis. Morbi sed tempor massa. Nam bibendum, risus eu volutpat vulputate, nulla urna vestibulum felis, ut ultrices nisi ante id est. Nulla facilisi. Praesent at rhoncus dolor, ut tempor velit. Vestibulum lacus velit, elementum vel faucibus rutrum, commodo hendrerit tellus. In accumsan, magna sed feugiat consequat, odio enim tincidunt orci, vel sollicitudin metus felis eget mi. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Proin cursus ornare mauris, nec commodo felis ultrices sit amet. Sed cursus eleifend lorem, eu tincidunt odio mattis et. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
           </p>
         </div>
-        <div class="col">
+        <div class="sidebar">
           <h3>Sidebar content</h3>
-          <button class="btn btn-primary">Primary</button>
-          <button class="btn btn-success">Success</button>
-          <button class="btn btn-danger">Danger</button>
-          <button class="btn btn-warning">Warning</button>
+          <div class="button-group">
+            <button class="btn btn-primary">Primary</button>
+            <button class="btn btn-success">Success</button>
+            <button class="btn btn-danger">Danger</button>
+            <button class="btn btn-warning">Warning</button>
+          </div>
         </div>
       </div>
     </main>
@@ -81,57 +75,204 @@
 </template>
 
 <script setup>
-import Popover from 'primevue/popover'
-import ColorPicker from 'primevue/colorpicker'
-import { ref, onMounted, watch } from 'vue'
-import * as R from 'ramda'
+  import Popover from 'primevue/popover'
+  import ColorPicker from 'primevue/colorpicker'
+  import ColorPalette from '@/components/themer/ColorPalette.vue'
+  import ColorWheel from '@/components/themer/ColorWheel.vue'
+  import Header from '@/components/Header.vue'
+  import { ref, onMounted, watch } from 'vue'
+  import * as R from 'ramda'
 
-const test = ref()
+  const themerToggle = ref()
+  const primary = ref()
+  const background = ref()
+  const tableHovering = ref(false)
+  const testLinks = [
+    {
+      name: "Test link 1",
+      route: "/themer"
+    },
+    {
+      name: "Test link 2",
+      route: "/themer"
+    },
+    {
+      name: "Test link 3",
+      route: "/themer"
+    },
+    {
+      name: "Test link 4",
+      route: "/themer"
+    },
+  ]
 
-const theme = ref({
-  '--bs-body-color': 'ffffff',
-  '--bs-body-bg': '008000',
-  '--bs-dark': 'ffc107',
-  '--bs-primary': '0d6efd',
-  '--bs-secondary': '6c757d',
-  '--bs-danger': 'dc3545',
-  '--bs-warning': 'ffc107',
-  '--bs-secondary-color': 'ffc107',
-  '--bs-secondary-bg': 'ffc107',
-  '--bs-tertiary-color': 'ffc107',
-  '--bs-tertiary-bg': 'ffc107',
-  '--bs-emphasis-color': 'ffc107',
-  '--bs-border-color': 'dc3545',
-  '--background-color': '242424',
-})
-const changing = ref("--bs-body-color")
+  const newTheme = ref([
+    {
+      name: 'Text',
+      description: 'The color of the main text',
+      colorValue: '000000',
+      varName: '--body-color'
+    },
+    {
+      name: 'Background',
+      description: 'The color of the background',
+      colorValue: 'e5fff9',
+      varName: '--background-color'
+    },
+    {
+      name: 'Secondary',
+      description: 'For things that should pop out',
+      colorValue: '000000',
+      varName: '--secondary-color'
+    },
+    {
+      name: 'Secondary Background',
+      description: 'For areas that should pop out',
+      colorValue: '000000',
+      varName: '--secondary-background'
+    },
+    {
+      name: 'Accent',
+      description: 'For things that need to be set apart',
+      colorValue: '000000',
+      varName: '--accent-color'
+    },
+    {
+      name: 'Accent Background',
+      description: 'For areas that need a bit of contrast',
+      colorValue: '000000',
+      varName: '--accent-background'
+    },
+    {
+      name: 'Primary',
+      description: 'Primary interaction color',
+      colorValue: '005eff',
+      varName: '--primary-color'
+    },
+    {
+      name: 'Success',
+      description: 'Used to signify positive result',
+      colorValue: '00850d',
+      varName: '--success-color'
+    },
+    {
+      name: 'Warning',
+      description: 'Used to signify attention needed',
+      colorValue: 'ffd000',
+      varName: '--warning-color'
+    },
+    {
+      name: 'Danger',
+      description: 'Used to signify a negative result',
+      colorValue: 'c70000',
+      varName: '--danger-color'
+    },
+  ])
 
-function updateColours() {
-  console.log("updateColours called")
-  for (const [key, value] of Object.entries(theme.value)) {
-    document.documentElement.style.setProperty(key, "#"+value)
-    document.documentElement.style.setProperty(key+'-rgb', hexToRgb(value))
+  function colorChosen(name, colorValue) {
+    const idx = R.findIndex(R.propEq(name, 'name'))(newTheme.value)
+    newTheme.value[idx].colorValue = colorValue.slice(1)
   }
-}
 
-function hexToRgb(hex) {
-  //hex = hex.slice(1) //trim the #
-  return R.map(x => parseInt(x, 16), R.splitEvery(2, hex))
-}
+  function updateColours() {
+    for (var i = 0; i < newTheme.value.length; i++) {
+      const value = newTheme.value[i]
+      document.documentElement.style.setProperty(value.varName, "#"+value.colorValue)
+      document.documentElement.style.setProperty(value.varName+'-rgb', hexToRgb(value.colorValue))
+    }
+  }
 
-function rgbToHex(r, g, b) {
-  return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
-}
+  function hexToRgb(hex) {
+    //hex = hex.slice(1) //trim the #
+    return R.map(x => parseInt(x, 16), R.splitEvery(2, hex))
+  }
 
-function toggle(event) {
-  test.value.toggle(event)
-}
+  function rgbToHex(r, g, b) {
+    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
+  }
 
-onMounted(() => {
-  updateColours()
-})
+  function toggleThemer() {
+    themerToggle.value.ariaExpanded = themerToggle.value.ariaExpanded !== "true"
+  }
+
+  function togglePrimary(event) {
+    primary.value.toggle(event)
+  }
+
+  function toggleBackground(event) {
+    background.value.toggle(event)
+  }
+
+  onMounted(() => {
+    updateColours()
+  })
 </script>
 
 <style scoped>
+  .themer {
+    position: relative;
+  }
 
+  .themer-popover {
+    position: absolute;
+    top: 60px;
+    height: 90vh;
+    background: white;
+    visibility: hidden;
+    overflow: hidden;
+    transition: grid-template-rows 1200ms ease-in-out, visibility 800ms;
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    grid-template-rows: 0fr;
+  }
+
+  .themerator-toggle[aria-expanded='true'] + .themer-popover {
+    visibility: visible;
+    overflow-y: scroll;
+    grid-template-rows: 1fr;
+  }
+
+  .themer-grid {
+    display: grid;
+    grid-template-columns: 1fr 4fr;
+    grid-column-gap: 10px;
+  }
+
+  .content-grid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .sidebar {
+    flex: 1 0 0;
+  }
+
+  @media only screen and (min-width: 768px) {
+    .content-grid {
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      grid-column-gap: 10px;
+    }
+  }
+
+  @media only screen and (min-width: 992px) {
+    .themer {
+      position: static;
+    }
+    .themerator-toggle {
+      display: none;
+    }
+    .themer-popover {
+      position: static;
+      visibility: visible;
+      overflow-y: scroll;
+      grid-template-rows: 1fr;
+    }
+
+    .flex-container {
+    }
+    .sidebar .flex-container * {
+      flex: 1 0 100px;
+    }
+  }
 </style>

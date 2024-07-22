@@ -1,0 +1,9 @@
+body { margin: 30px; }
+/* Optional: Add some margin to the body to add space and
+see where your offending elements cross the line */
+
+body * { outline: 1px solid red; }
+/* Alternate: add an outline  to all elements on the page. Won't effect box model */
+
+div#offending-area * { outline: 1px solid red; }
+/* If you've got some idea about where the issue is, drill down further than the body tag */
