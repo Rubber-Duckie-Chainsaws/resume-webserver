@@ -31,6 +31,15 @@
     border-top: 1px solid grey;
   }
 
+  .fade-enter-active, .fade-leave-active, .fade-move {
+    transition: all 800ms;
+    opacity: 1;
+  }
+  .fade-enter-from, .fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+    opacity: 0;
+    transform: translateX(80px);
+  }
+
   svg text {
     text-anchor: middle;
     dominant-baseline: middle;

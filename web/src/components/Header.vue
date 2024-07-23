@@ -1,6 +1,6 @@
 <template>
-  <header>
-    <nav class="navbar-container">
+  <header :class="headerClass">
+    <nav class="navbar-container" >
       <slot name="brand"></slot>
       <button
         type="button"
@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-  import { ref } from 'vue'
+  import { ref, computed } from 'vue'
 
   const props = defineProps({
     links: Array
@@ -39,6 +39,10 @@
   function toggleMenu() {
     navbarToggle.value.ariaExpanded = navbarToggle.value.ariaExpanded === "false" ? "true" : "false"
   }
+
+  const headerClass = computed(() => {
+    return ["secondary"]
+  })
 </script>
 
 <style scoped>

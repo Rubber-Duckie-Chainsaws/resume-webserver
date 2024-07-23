@@ -1,15 +1,15 @@
 <template>
   <div ref="canvasWrapper" class="position-relative canvasWrapper">
-    <nav class="position-absolute top-0 start-0 w-100 navbar navbar-expand-sm bg-body-secondary interface">
-      <div class="container-fluid">
-        <button class="btn btn-primary" @click="prevPage">
-          <i class="bi bi-arrow-left"></i>
-        </button>
-        <p class="navbar-text">{{ currentPage }} of {{ totalPages }}</p>
-        <button class="btn btn-primary" @click="nextPage">
-          <i class="bi bi-arrow-right"></i>
-        </button>
-      </div>
+    <nav class="w-100 navbar navbar-expand-sm bg-body-secondary interface">
+      <button class="btn btn-primary" @click="prevPage">
+        Back
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <p class="navbar-text">{{ currentPage }} of {{ totalPages }}</p>
+      <button class="btn btn-primary" @click="nextPage">
+        <i class="bi bi-arrow-right"></i>
+        Next
+      </button>
     </nav>
     <canvas class="w-100 h-100" ref="pdfCanvas"></canvas>
   </div>
@@ -31,6 +31,7 @@
   const totalPages = ref(0)
 
   const resizeObserver = new ResizeObserver(() => {
+    console.log("Resize observered")
     getPage()
   })
 
@@ -96,16 +97,25 @@
     totalPages.value = pdf.numPages
     currentPage.value = 1
     getPage()
-    resizeObserver.observe(pdfCanvas.value)
+    resizeObserver.observe(canvasWrapper.value)
   }
 </script>
 
 <style scoped>
 .interface {
   display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.canvasWrapper {
+  position: relative;
 }
 
 .canvasWrapper:hover .interface {
   display: flex;
+  justify-content: space-between
 }
 </style>
