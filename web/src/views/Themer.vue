@@ -12,31 +12,11 @@
         <span class="icon-bar"></span>
       </button>
       <div class="themer-popover">
-        <div>
-          <ColorWheel @colorSelected="colorChosen" :fields="R.map(R.prop('name'), newTheme)" :size="360"></ColorWheel>
-        </div>
-        <div @click="tableHovering = !tableHovering" @mouseover="tableHovering = true" @mouseleave="tableHovering = false">
-          {{ tableHovering }}
-          <table  class="table">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Purpose</th>
-                <th scope="col">Swatch</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(themePart, idx) in newTheme">
-                <ColorPalette v-model="newTheme[idx]" :hovering="tableHovering">
-                </ColorPalette>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <ColorTool />
       </div>
     </aside>
     <main class="col-2 themed">
-      <Header class="secondary" :links="testLinks">
+      <Header :links="testLinks">
         <template #brand>
           <a class="navbar-brand" href="#">Brand link</a>
         </template>
@@ -76,9 +56,7 @@
 
 <script setup>
   import Popover from 'primevue/popover'
-  import ColorPicker from 'primevue/colorpicker'
-  import ColorPalette from '@/components/themer/ColorPalette.vue'
-  import ColorWheel from '@/components/themer/ColorWheel.vue'
+  import ColorTool from '@/components/themer/ColorTool.vue'
   import Header from '@/components/Header.vue'
   import { ref, onMounted, watch } from 'vue'
   import * as R from 'ramda'
