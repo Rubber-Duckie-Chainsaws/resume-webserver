@@ -59,6 +59,15 @@ import Aura from '@primevue/themes/aura'
 
 
 /**********************************\
+ *            Pinia               *
+ * TODO: Move to own package/file *
+\**********************************/
+
+import { createPinia } from 'pinia'
+
+const pinia = createPinia()
+
+/**********************************\
  *           Showdown             *
  * TODO: Move to own package/file *
 \**********************************/
@@ -66,6 +75,7 @@ import { VueShowdownPlugin } from 'vue-showdown'
 
 createApp(App)
   .use(router)
+  .use(pinia)
   .use(PrimeVue, {
     theme: {
       preset: Aura

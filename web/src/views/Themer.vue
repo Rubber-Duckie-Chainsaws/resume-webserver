@@ -62,9 +62,6 @@
   import * as R from 'ramda'
 
   const themerToggle = ref()
-  const primary = ref()
-  const background = ref()
-  const tableHovering = ref(false)
   const testLinks = [
     {
       name: "Test link 1",
@@ -84,106 +81,9 @@
     },
   ]
 
-  const newTheme = ref([
-    {
-      name: 'Text',
-      description: 'The color of the main text',
-      colorValue: '000000',
-      varName: '--body-color'
-    },
-    {
-      name: 'Background',
-      description: 'The color of the background',
-      colorValue: 'e5fff9',
-      varName: '--background-color'
-    },
-    {
-      name: 'Secondary',
-      description: 'For things that should pop out',
-      colorValue: '000000',
-      varName: '--secondary-color'
-    },
-    {
-      name: 'Secondary Background',
-      description: 'For areas that should pop out',
-      colorValue: '000000',
-      varName: '--secondary-background'
-    },
-    {
-      name: 'Accent',
-      description: 'For things that need to be set apart',
-      colorValue: '000000',
-      varName: '--accent-color'
-    },
-    {
-      name: 'Accent Background',
-      description: 'For areas that need a bit of contrast',
-      colorValue: '000000',
-      varName: '--accent-background'
-    },
-    {
-      name: 'Primary',
-      description: 'Primary interaction color',
-      colorValue: '005eff',
-      varName: '--primary-color'
-    },
-    {
-      name: 'Success',
-      description: 'Used to signify positive result',
-      colorValue: '00850d',
-      varName: '--success-color'
-    },
-    {
-      name: 'Warning',
-      description: 'Used to signify attention needed',
-      colorValue: 'ffd000',
-      varName: '--warning-color'
-    },
-    {
-      name: 'Danger',
-      description: 'Used to signify a negative result',
-      colorValue: 'c70000',
-      varName: '--danger-color'
-    },
-  ])
-
-  function colorChosen(name, colorValue) {
-    const idx = R.findIndex(R.propEq(name, 'name'))(newTheme.value)
-    newTheme.value[idx].colorValue = colorValue.slice(1)
-  }
-
-  function updateColours() {
-    for (var i = 0; i < newTheme.value.length; i++) {
-      const value = newTheme.value[i]
-      document.documentElement.style.setProperty(value.varName, "#"+value.colorValue)
-      document.documentElement.style.setProperty(value.varName+'-rgb', hexToRgb(value.colorValue))
-    }
-  }
-
-  function hexToRgb(hex) {
-    //hex = hex.slice(1) //trim the #
-    return R.map(x => parseInt(x, 16), R.splitEvery(2, hex))
-  }
-
-  function rgbToHex(r, g, b) {
-    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
-  }
-
   function toggleThemer() {
     themerToggle.value.ariaExpanded = themerToggle.value.ariaExpanded !== "true"
   }
-
-  function togglePrimary(event) {
-    primary.value.toggle(event)
-  }
-
-  function toggleBackground(event) {
-    background.value.toggle(event)
-  }
-
-  onMounted(() => {
-    updateColours()
-  })
 </script>
 
 <style scoped>
@@ -200,7 +100,6 @@
     overflow: hidden;
     transition: grid-template-rows 1200ms ease-in-out, visibility 800ms;
     display: grid;
-    grid-template-columns: 3fr 1fr;
     grid-template-rows: 0fr;
   }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -18,6 +19,20 @@ type Theme struct {
 	System      string
 	Version     string
 	Colors      map[string]string
+}
+
+type ThemeRequest struct {
+	*Theme
+}
+
+func (tR *ThemeRequest) Bind(request *http.Request) error {
+	log.Print(tR)
+	if tR.Theme == nil {
+		return errors.New("Missing theme")
+	}
+
+	tR.Theme.System = "false"
+	return nil
 }
 
 func (t *Theme) save() error {
@@ -54,6 +69,7 @@ func ProdRoutes(router *chi.Mux) {
 func RestRoutes(router *chi.Mux) {
 	router.Route("/themes", func(r chi.Router) {
 		r.Get("/", getThemes)
+		r.Post("/", saveNewTheme)
 
 		r.Get("/{theme}", getTheme)
 	})
@@ -99,6 +115,21 @@ func getTheme(writer http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(writer).Encode(theme)
 }
 
+func saveNewTheme(writer http.ResponseWriter, request *http.Request) {
+	var data Theme
+	decoder := json.NewDecoder(request.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	theme := data
+
+	theme.save()
+	writer.WriteHeader(http.StatusOK)
+	fmt.Fprintf(writer, "OK")
+}
+
 func AdditionalRoutes(router *chi.Mux) {
 	router.Get("/s3/*", func(writer http.ResponseWriter, request *http.Request) {
 		key := request.URL.Path[len("/s3/"):]
@@ -121,7 +152,7 @@ func AdditionalRoutes(router *chi.Mux) {
 
 		manifestFile, err := os.ReadFile(filepath.Join(serverConfig.Root, "dist/.vite/manifest.json"))
 		if err != nil {
-			log.Fatal("Failed reading manifest.json", err)
+			log.Fatal("Failed reading manifest.json: ", err)
 		}
 		err = json.Unmarshal(manifestFile, &chunks)
 

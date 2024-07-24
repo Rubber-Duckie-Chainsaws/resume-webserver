@@ -1,5 +1,5 @@
 <template>
-  <div class="grid-2">
+  <div class="grid-2 themed">
     <div class="resume">
       <h1>Resume</h1>
       <PDFViewer :url="url" />
@@ -30,6 +30,7 @@
 
   .resume {
     max-width: 800px;
+    margin: 0 2em;
   }
 
   .cover-letter {

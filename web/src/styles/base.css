@@ -38,7 +38,7 @@ body {
   }
 
   & .secondary {
-    color: var(--accent-color);
+    color: var(secondary);
     background: var(--secondary-background);
     &a {
       color: var(--accent-color);
