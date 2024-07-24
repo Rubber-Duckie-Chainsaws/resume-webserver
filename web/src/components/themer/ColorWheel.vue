@@ -6,43 +6,27 @@
         <canvas ref="harmonies" :width="size" :height="size"></canvas>
         <canvas ref="interaction" :width="size" :height="size" @click="handleColorSelect"></canvas>
       </div>
+      <div class="previous-swatches">
+        <Swatch v-for="(swatch, index) in swatchHistory" :color="swatch.color" :favourite="swatch.favourite" @favourited="swatch.favourite = !swatch.favourite" @previousSelected="previousSelected" :key="index" />
+      </div>
+      <div class="controls">
+        <Slider v-model="saturation" @change="saturationChange" :min=0 :max=1 :step="0.01" />
+      </div>
       <div class="swatches">
         <div class="col types">
-          <h3>Stuff</h3>
+          <input @keyup.enter="selectedColor = inputColor" v-model.lazy="inputColor" />
           <div style="display: flex; flex-direction: column">
-            <div>
-              <RadioButton v-model="selectedAuxillary" @click="changeAuxillary" inputId="aux1" name="mono" value="monochrome" />
-              <label for="aux1">Monochrome</label>
-            </div>
-            <div>
-              <RadioButton v-model="selectedAuxillary" @click="changeAuxillary" inputId="aux2" name="analogous" value="analogous" />
-              <label for="aux2">Analogous</label>
-            </div>
-            <div>
-              <RadioButton v-model="selectedAuxillary" @click="changeAuxillary" inputId="aux3" name="triad" value="triad" />
-              <label for="aux4">Triad</label>
-            </div>
-            <div>
-              <RadioButton v-model="selectedAuxillary" @click="changeAuxillary" inputId="aux4" name="complement" value="complement" />
-              <label for="aux3">Complementary</label>
-            </div>
-            <div>
-              <RadioButton v-model="selectedAuxillary" @click="changeAuxillary" inputId="aux5" name="analog" value="split" />
-              <label for="aux5">Split Complementary</label>
-            </div>
+            <SelectButton v-model="selectedAuxillary" :options="['monochrome', 'analogous', 'triad', 'complement', 'split']" />
           </div>
         </div>
         <div class="col display">
-          <TransitionGroup v-if="swatches" name="swatches" tag="div">
-            <div v-for="(swatch, idx) in swatches" @contextmenu="showContext(idx, swatch, $event)" :key="swatch" :style="{ margin: '10px', padding: '3em', background: swatch, border: '1px solid black' }">
+          <TransitionGroup v-if="swatches" class="harmonies" name="swatches" tag="div">
+            <div v-for="(swatch, idx) in swatches" @click="() => previousSelected(swatch)" @contextmenu="showContext(idx, swatch, $event)" :key="swatch" :style="{ margin: '10px', padding: '3em', background: swatch, border: '1px solid black' }">
               {{ swatch }}
               <ContextMenu ref="menus" :model="items" />
             </div>
           </TransitionGroup>
         </div>
-      </div>
-      <div class="controls">
-        <Slider v-model="luminosity" @change="luminosityChange" :min=0 :max=1 :step="0.01" />
       </div>
     </div>
   </div>
@@ -52,12 +36,14 @@
   import { ref, onMounted, computed, watch } from 'vue'
   import Knob from 'primevue/knob'
   import RadioButton from 'primevue/radiobutton'
+  import SelectButton from 'primevue/selectbutton'
   import ContextMenu from 'primevue/contextmenu'
   import Slider from 'primevue/slider'
-  import { rgb2hsl, hex2rgb, rgb2hex, hsl2rgb, hsl2hex } from '@/composables/global.js'
+  import Swatch from '@/components/themer/Swatch.vue'
+  import { rgb2hsl, hex2rgb, rgb2hex, hsl2rgb, hsl2hex, hex2hsl, toRadians, radiansToXY } from '@/composables/global.js'
   import * as R from 'ramda'
 
-  const emits = defineEmits(['colorSelected'])
+  const emit = defineEmits(['colorSelected'])
   const props = defineProps({
     size: Number,
     fields: Array
@@ -71,28 +57,25 @@
 
 
   const segmentCount = ref(360)
-  const luminosity = ref(0.5)
+  const saturation = ref(0.5)
+  const inputColor = ref()
   const selectedColor = ref()
   const selectedAuxillary = ref('monochrome')
   var ctx = null
   const sizePx = props.size+'px'
   const menus = ref()
   const applyingColor = ref(null)
-
+  const previousSwatches = ref([])
 
 
   // Handlers
-  function luminosityChange() {
+  function saturationChange() {
     drawCircle(segmentCount.value)
   }
 
   function showContext(idx, swatch, event) {
     applyingColor.value = swatch
     menus.value[idx].show(event)
-  }
-
-  function changeAuxillary() {
-    clearBullseyes(harmonies)
   }
 
   function handleColorSelect(event) {
@@ -109,7 +92,22 @@
     const fixedRadians = radians < 0 ? 2*Math.PI + radians : radians
     const degrees = fixedRadians * (180 / Math.PI)
 
-    selectedColor.value = rgb2hex(...R.map(R.multiply(255), hsl2rgb(degrees, radius/(props.size/2), luminosity.value)))
+    const hsl = [degrees, saturation.value, (1-radius/canvasCenter.value * 0.5)]
+
+    selectedColor.value = rgb2hex(...hsl2rgb(...hsl))
+    addToHistory(selectedColor.value)
+  }
+
+  function previousSelected(color) {
+    if (color == selectedColor.value) {
+      console.log("Doing nothing, it's already this color")
+    } else {
+      const hsl = hex2hsl(color.slice(1))
+      const restoredColor = hsl2hex(hsl, true)
+      const coords = radiansToXY(toRadians(hsl[0]), canvasCenter.value*hsl[1])
+      const eventStub = {offsetX: coords[0]+canvasCenter.value, offsetY: coords[1]+canvasCenter.value}
+      handleColorSelect(eventStub)
+    }
   }
 
 
@@ -160,8 +158,8 @@
       const radian = toRadians(arc)
       const outerCoords = R.map(R.add(halfCircle), radiansToXY(radian, outerCircle))
       const innerCoords = R.map(R.add(halfCircle), radiansToXY(radian, innerCircle))
-      const innerColor = R.map(R.multiply(255), hsl2rgb(arc, 0.05, luminosity.value))
-      const outerColor = R.map(R.multiply(255), hsl2rgb(arc, 1, luminosity.value))
+      const innerColor = hsl2rgb(arc, saturation.value, 1)
+      const outerColor = hsl2rgb(arc, saturation.value, 0.5)
       //console.log("Arc: ", arc, "Next Arc: ", nextArc, "Prior Arc: ", priorArc)
       //console.log("Inner: [", innerColor[0], ", ", innerColor[1], ", ", innerColor[2], "], Outer: [",outerColor[0], ", ", outerColor[1], ", ", outerColor[2], "]")
       //console.log("Inner: [", innerCoords[0], ", ", innerCoords[1], "], Outer: [",outerCoords[0], ", ", outerCoords[1], "]")
@@ -181,15 +179,27 @@
     wheel.value.getContext('2d').drawImage(wheel.value.offscreenCanvas, 0, 0)
   }
 
+  function addToHistory(colorValue) {
+    if (!R.any(R.map(R.propEq(colorValue, 'color'), previousSwatches.value))) {
+      return
+    }
+    var appending = {color: colorValue, favourite: false}
+    for (var swatchIdx = 0; swatchIdx < previousSwatches.value.length; swatchIdx++) {
+      const swatch = previousSwatches.value[swatchIdx]
+      if (!swatch.favourite) {
+        const temp = swatch
+        previousSwatches.value[swatchIdx] = appending
+        appending = temp
+      }
+    }
+    previousSwatches.value = R.append(appending, previousSwatches.value)
+  }
+
 
 
   // Utility Functions
-  function toRadians(degrees) {
-    return (Math.PI/180)*degrees
-  }
-
-  function radiansToXY(radians, radius) {
-    return [radius * Math.cos(radians), radius * Math.sin(radians)]
+  function addHue(hue, degrees) {
+    return hue + degrees > 0 ? (hue + degrees) % 360 : 360 - (Math.abs(degrees) - hue)
   }
 
 
@@ -204,11 +214,15 @@
         label: x,
         command: () => {
           if (applyingColor.value != null) {
-            emits('colorSelected', x, applyingColor.value)
+            emit('colorSelected', x, applyingColor.value.slice(1))
           }
         }
       }
     }, props.fields)
+  })
+
+  const canvasCenter = computed(() => {
+    return props.size/2
   })
 
   const auxilaries = computed(() => {
@@ -219,34 +233,32 @@
       return [[], []]
     }
     const hsl = rgb2hsl(...hex2rgb(selectedColor.value.slice(1)))
-    console.log(hsl)
     switch(selectedAuxillary.value) {
       case "monochrome":
-        const topDiff = (1 + hsl[1]) * (1.0/3.0)
-        const bottomDiff = hsl[1] * (1.0/3.0)
-        const lighter = [hsl[0], -1*hsl[1]+topDiff, hsl[2]]
-        const lightest = [hsl[0], -1*hsl[1]+topDiff, Math.min(1, hsl[2]*1.3)]
-        const darker = [hsl[0], -1*hsl[1]+bottomDiff, hsl[2]]
-        const darkest = [hsl[0], -1*hsl[1]+bottomDiff, hsl[2]*0.75]
-        return [[lightest, lighter], [darker, darkest]]
+        const halfDist = (val, target, multi=0.5) => (Math.abs(val - target) * multi)
+        const topDiff = (1 - hsl[2]) * (1.0/3.0)
+        const bottomDiff = (hsl[2]-0.5) * (1.0/3.0)
+        const [, lighter] = R.mapAccum((a, b) => [a+halfDist(a, 1), [hsl[0], hsl[1], a+halfDist(a, 1, 0.45)]], hsl[2], R.repeat(hsl[2], 4))
+        const [, darker] = R.mapAccum((a, b) => [a-halfDist(a, 0.15), [hsl[0], hsl[1], a-halfDist(a, 0.15, 0.6)]], hsl[2], R.repeat(hsl[2], 4))
+        return [R.reverse(lighter), darker]
         break;
       case "analogous":
-        var leftAnalogue = [hsl[0]-20, -1*hsl[1], hsl[2]]
-        var rightAnalogue = [hsl[0]+20, -1*hsl[1], hsl[2]]
-        return [[leftAnalogue], [rightAnalogue]]
+        var leftAnalogue = R.map((x) => [addHue(hsl[0], (-1*x*22)), hsl[1], hsl[2]], R.range(1, 3))
+        var rightAnalogue = R.map((x) => [addHue(hsl[0], (x*22)), hsl[1], hsl[2]], R.range(1, 3))
+        return [leftAnalogue, rightAnalogue]
         break;
       case "triad":
-        var leftAnalogue = [hsl[0]-120, -1*hsl[1], hsl[2]]
-        var rightAnalogue = [hsl[0]+120, -1*hsl[1], hsl[2]]
+        var leftAnalogue = [addHue(hsl[0], -120), hsl[1], hsl[2]]
+        var rightAnalogue = [addHue(hsl[0], 120), hsl[1], hsl[2]]
         return [[leftAnalogue], [rightAnalogue]]
         break;
       case "complement":
-        const complement = [180+hsl[0], -1*hsl[1], hsl[2]]
+        const complement = [addHue(hsl[0], 180), hsl[1], hsl[2]]
         return [[], [complement]]
         break;
       case "split":
-        const leftComplement = [150+hsl[0], -1*hsl[1], hsl[2]]
-        const rightComplement = [210+hsl[0], -1*hsl[1], hsl[2]]
+        const leftComplement = [addHue(hsl[0], 150), hsl[1], hsl[2]]
+        const rightComplement = [addHue(hsl[0], 210), hsl[1], hsl[2]]
         return [[leftComplement], [rightComplement]]
         break;
       default:
@@ -261,13 +273,22 @@
     }
     if (interaction.value && auxilaries.value.length > 0) {
       const targets = R.unnest(auxilaries.value)
+      clearBullseyes(harmonies)
       for (var i = 0; i < targets.length; i++) {
         const hsl = targets[i]
-        const coords = radiansToXY(toRadians(hsl[0]), (props.size/2)*hsl[1])
-        addBullseye(coords[0]+(props.size/2), coords[1]+(props.size/2), 8, harmonies)
+        const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
+        addBullseye(coords[0]+canvasCenter.value, coords[1]+canvasCenter.value, 8, harmonies)
       }
       return R.reduce(R.concat, [], [R.map(hsl2hex, auxilaries.value[0]), [selectedColor.value], R.map(hsl2hex, auxilaries.value[1])])
     }
+  })
+
+  const swatchHistory = computed(() => {
+    return R.slice(0, 8, R.concat(previousSwatches.value, R.repeat({color: "", favourite: false}, 8)))
+  })
+
+  const toolGridSize = computed(() => {
+    return props.size + "px";
   })
 </script>
 
@@ -279,20 +300,26 @@
   }
 
   .toolGrid {
-    /*display: grid;
-    grid-template-columns: 1fr 1fr;*/
-
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(v-bind(toolGridSize), 2fr) minmax(160px, 1fr);
+    grid-column-gap: 20px;
   }
 
   .controls {
-    /*grid-column: span 2;*/
+    grid-column: span 3;
     padding: 2em;
+  }
+
+  .previous-swatches {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    grid-gap: 20px;
   }
 
   .swatches {
     display: flex;
+    flex-direction: column;
     width: 100%;
     & .types {
       flex: 1 0 0;
@@ -312,6 +339,11 @@
   .swatches-leave-to {
     opacity: 0;
     transform: translateX(30px);
+  }
+
+  .harmonies {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .container-fill {

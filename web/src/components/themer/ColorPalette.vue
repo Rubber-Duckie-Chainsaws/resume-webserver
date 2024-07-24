@@ -1,32 +1,28 @@
 <template>
-  <td>{{ themePart.name }}</td>
-  <transition name="slide">
-  <td v-show="hovering">{{ themePart.description }}</td>
-  </transition>
-  <td>
-    <div class="p-3 rounded-2 styled" :style="'background-color: var('+themePart.varName+'); border: 1px solid black;'" @click="toggle">&nbsp;</div>
-    <p>#{{ themePart.colorValue }}</p>
+  <div>
+    <div class="styled themed" @click="toggle">
+        <p class="secondary" :style="{top: '-1.4em', left: '-2px', 'border-bottom-right-radius': '0.8em', 'padding-left': '1em'}" >{{ themePart.name }}</p>
+      <!--<transition name="slide">
+      </transition>-->
+      <p class="secondary" :style="{bottom: '-1.4em', right: '-2px', 'border-top-left-radius': '0.8em', 'padding-right': '1em'}">#{{ themePart.colorValue }}</p>
+    </div>
     <Popover ref="colorpicker">
-      <div class="bg-light">
+      <div>
         <ColorPicker v-model="themePart.colorValue" @change="updateColor" inline />
+        <h4>{{ themePart.description }}</h4>
       </div>
     </popover>
-  </td>
+  </div>
 </template>
 
 <script setup>
-  import { ref, watch, onMounted } from 'vue'
+  import { ref, watch, computed } from 'vue'
   import Popover from 'primevue/popover'
   import ColorPicker from 'primevue/colorpicker'
   import * as R from 'ramda'
 
   const props = defineProps(['hovering'])
-
-  onMounted(() => {
-    watch(themePart.value, () => {
-      updateColor()
-    })
-  })
+  const emit = defineEmits(['colorSelected'])
 
   const colorpicker = ref()
 
@@ -34,35 +30,46 @@
     colorpicker.value.toggle(e)
   }
 
-  function hexToRgb(hex) {
-    return R.map(x => parseInt(x, 16), R.splitEvery(2, hex))
-  }
+  const themePart = defineModel()
 
-  function rgbToHex(r, g, b) {
-    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
-  }
+  const htmlCode = computed(() => {
+    return '#'+themePart.value.colorValue
+  })
 
   function updateColor() {
-    document.documentElement.style.setProperty(themePart.value.varName, "#"+themePart.value.colorValue)
-    document.documentElement.style.setProperty(themePart.value.varName+'-rgb', hexToRgb(themePart.value.colorValue))
+    emit('colorSelected', themePart.value.name, themePart.value.colorValue)
   }
-
-  const themePart = defineModel()
 </script>
 
 <style scoped>
   .styled {
-    background-color: var(v-bind(themePart.varName));
-    border: 1px solid black;
-    padding: 1.2em 1.5em;
+    position: relative;
+    background-color: v-bind(htmlCode);
+    border: 1px solid var(--accent-background);
+    padding: 3.5em 4.2em;
+    border-radius: 1.4em;
+    overflow: hidden;
+  }
+
+  .styled {
+    & p {
+      position: absolute;
+      padding: 6px;
+      border: 1px solid var(--accent-background);
+      opacity: 1;
+    }
+    &:hover p{
+      opacity: 0;
+      transition: opacity 400ms;
+    }
   }
 
   .slide-enter-active, .slide-leave-active {
-    transition: opacity 800ms;
+    transition: all 800ms;
     opacity: 1;
   }
   .slide-enter, .slide-leave-to /* .slide-leave-active in <2.1.8 */ {
-    transition: opacity 800ms;
+    transition: all 800ms;
     opacity: 0;
   }
 </style>

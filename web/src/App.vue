@@ -1,9 +1,11 @@
 <template>
-  <Header :links="appLinks">
-    <template #brand>
-      <a class="navbar-brand" href="/">Tipene Moss</a>
-    </template>
-  </Header>
+  <div class="themed">
+    <Header :links="appLinks">
+      <template #brand>
+        <a class="navbar-brand" href="/">Tipene Moss</a>
+      </template>
+    </Header>
+  </div>
 
 <!-- Begin page content -->
 <main class="">
@@ -35,6 +37,10 @@
     }
   ]
 
+  import { useThemeStore } from '@/stores/theme'
+
+  const themes = useThemeStore()
+
   onMounted(() => {
     mermaid.initialize({
       startOnLoad: true,
@@ -45,6 +51,7 @@
         useMaxWidth: 0
       }
     })
+    themes.updateColors()
   })
 </script>
 

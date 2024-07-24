@@ -1,0 +1,20 @@
+{
+  "name": "Arctic Theme",
+  "description": "Simple theme with few colours",
+  "system": "true",
+  "version": "v1.0.0",
+  "colors": {
+    "Text": "000000",
+    "Background": "dbf4f4",
+    "Secondary": "065b5f",
+    "Secondary Background": "6d9e9e",
+    "Accent": "89dadb",
+    "Accent Background": "7feeff",
+    "Primary": "005eff",
+    "Success": "00850d",
+    "Warning": "ffd000",
+    "Danger": "c70000",
+    "Emphasis": "ffc107",
+    "Border": "dc3545"
+  }
+}

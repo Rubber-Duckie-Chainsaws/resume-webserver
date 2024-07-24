@@ -1,0 +1,20 @@
+{
+	"Name":"Pixie Vomit",
+	"Description":"God awful pastel purple",
+	"System":"",
+	"Version":"v1.0.0",
+	"Colors":{
+      "Accent":"7f82c8",
+      "Accent Background":"7f82c8",
+      "Background":"977fc8",
+      "Danger":"c70000",
+      "Primary":"b0c87f",
+      "Secondary":"b0c87f",
+      "Secondary Background":"c87fc3",
+      "Success":"00850d",
+      "Text":"000000",
+      "Warning":"ffd000",
+      "Emphasis": "ffc107",
+      "Border": "dc3545"
+    }
+}
