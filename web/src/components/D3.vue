@@ -1,6 +1,6 @@
 <template>
-  <div class="row">
-    <div class="col">
+  <div class="container">
+    <div class="details">
       <!--
       <input type="text" v-model.number="rows" />
       <Controls name="user" v-model="settings.user" />
@@ -10,7 +10,7 @@
         <VueShowdown
           :markdown="context" />
     </div>
-    <div class="col-9">
+    <div class="graph">
       <div class="svg-container">
         <svg xmlns="http://www.w3.org/2000/svg"
              ref="d3Svg"
@@ -44,17 +44,15 @@
                   :width="(d3Svg.width.baseVal.value - 270)"
                   :height="(d3Svg.height.baseVal.value - 180)" />
             </g>
-            <!--
-            <g class="test-nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in testNodes">
+            <g v-if="testing" class="test-nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in testNodes">
               <rect x="0"
                     y="0"
                     :width="node.width"
                     :height="node.height"
                     :fill="node.fill" />
             </g>
-            -->
             <g class="nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in data.nodes" v-bind:key="node.name">
-              <component @focus-change="clicked" :is="getType(node.type)" :node="node" :color="color(node.type)" />
+              <Node @focus-change="clicked" :node="node" :color="color(node.type)" />
             </g>
           </g>
         </svg>
@@ -66,13 +64,15 @@
 <script setup>
   const props = defineProps({
     "payload": Object,
+    testing: {
+      type: Boolean,
+      default: false
+    }
   })
 
   import { ref, computed, onMounted, onUnmounted } from 'vue'
 
-  import User from '@/components/d3/User.vue'
-  import System from '@/components/d3/System.vue'
-  import Container from '@/components/d3/Container.vue'
+  import Node from '@/components/d3/Node.vue'
   import Controls from '@/components/d3/Controls.vue'
   import * as R from 'ramda'
   import * as d3 from 'd3'
@@ -314,20 +314,6 @@
     simulation.value = getSimulation()
   }
 
-  function getType(type) {
-    switch(type) {
-      case "user":
-        return User
-        break;
-      case "system":
-        return System
-        break;
-      case "container":
-        return Container
-        break;
-    }
-  }
-
   const testNodes = computed(() => {
       let posTools = {}
       posTools["user"] = getPos("user")
@@ -410,8 +396,38 @@
 </script>
 
 <style scoped>
-.svg-container {
-  aspect-ratio: 4/3;
-  max-height: 80vh;
-}
+  :deep(svg div) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  :deep(svg h4), :deep(svg p) {
+    padding: 0;
+    margin: 0;
+  }
+
+  :deep(.interactable) {
+    cursor: pointer;
+  }
+
+  :deep(.plain) {
+    cursor: default;
+  }
+
+  .container {
+    display: flex;
+  }
+
+  .details {
+    flex: 1 0 0;
+  }
+
+  .graph {
+    flex: 5 0 0;
+  }
+
+  .svg-container {
+    aspect-ratio: 4/3;
+    max-height: 80vh;
+  }
 </style>

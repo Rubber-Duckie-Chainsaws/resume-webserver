@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -33,6 +34,37 @@ func (tR *ThemeRequest) Bind(request *http.Request) error {
 
 	tR.Theme.System = "false"
 	return nil
+}
+
+//var ErrNotFound = &ErrResponse{HTTPStatusCode: 404, StatusText: "Resource not found."}
+
+func ThemeCtx(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		var theme Theme
+		var err error
+
+		if themeName := chi.URLParam(request, "theme"); themeName != "" {
+			themeFile, err := os.ReadFile(filepath.Join(serverConfig.Root, "themes", fmt.Sprintf("%s.json", themeName)))
+			if err != nil {
+				log.Print("Failed reading theme file", err)
+				//render.Render(writer, request, ErrNotFound)
+			}
+			err = json.Unmarshal(themeFile, &theme)
+			if err != nil {
+				log.Print("Failed to unmarshal theme file", err)
+			}
+		} else {
+			//render.Render(writer, request, ErrNotFound)
+			return
+		}
+		if err != nil {
+			//render.Render(w, r, ErrNotFound)
+			return
+		}
+
+		ctx := context.WithValue(request.Context(), "theme", theme)
+		next.ServeHTTP(writer, request.WithContext(ctx))
+	})
 }
 
 func (t *Theme) save() error {
@@ -71,7 +103,12 @@ func RestRoutes(router *chi.Mux) {
 		r.Get("/", getThemes)
 		r.Post("/", saveNewTheme)
 
-		r.Get("/{theme}", getTheme)
+		r.Route("/{theme}", func(r chi.Router) {
+			r.Use(ThemeCtx)
+			r.Get("/", getTheme)
+			r.Put("/", updateTheme)
+			r.Delete("/", deleteTheme)
+		})
 	})
 	// REST: /themes
 	// List, create, update, download or delete themes
@@ -100,19 +137,35 @@ func getThemes(writer http.ResponseWriter, request *http.Request) {
 }
 
 func getTheme(writer http.ResponseWriter, request *http.Request) {
-	themeName := chi.URLParam(request, "theme")
-	themeFile, err := os.ReadFile(filepath.Join(serverConfig.Root, "themes", fmt.Sprintf("%s.json", themeName)))
-	if err != nil {
-		log.Fatal("Failed reading theme file", err)
-	}
-	var theme Theme
-	err = json.Unmarshal(themeFile, &theme)
-	if err != nil {
-		log.Fatal("Failed to unmarshal theme file", err)
-	}
+	theme := request.Context().Value("theme").(Theme)
 	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(theme)
+}
+
+func updateTheme(writer http.ResponseWriter, request *http.Request) {
+	theme := request.Context().Value("theme").(Theme)
+	if theme.System == "true" {
+		log.Print("Can't edit a system theme")
+		writer.WriteHeader(http.StatusForbidden)
+		fmt.Fprintf(writer, "Cannot edit a system theme")
+	}
+
+	var data Theme
+	decoder := json.NewDecoder(request.Body)
+	err := decoder.Decode(&data)
+	if err != nil {
+		log.Fatal(err)
+	}
+	theme.Colors = data.Colors
+	theme.save()
+	writer.WriteHeader(http.StatusOK)
+	fmt.Fprintf(writer, "OK")
+}
+
+func deleteTheme(writer http.ResponseWriter, request *http.Request) {
+	writer.WriteHeader(http.StatusNotImplemented)
+	fmt.Fprintf(writer, "Not Implemented Yet")
 }
 
 func saveNewTheme(writer http.ResponseWriter, request *http.Request) {
@@ -124,6 +177,8 @@ func saveNewTheme(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	theme := data
+
+	theme.System = "false"
 
 	theme.save()
 	writer.WriteHeader(http.StatusOK)

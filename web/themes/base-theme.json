@@ -4,17 +4,17 @@
   "system": "true",
   "version": "v1.0.0",
   "colors": {
-    "Text": "#ffffff",
-    "Background": "#008000",
-    "Dark": "#ffc107",
-    "Primary": "#0d6efd",
-    "Secondary": "#6c757d",
-    "Danger": "#dc3545",
-    "Warning": "#ffc107",
-    "Secondary": "#ffc107",
-    "Accent": "#ffc107",
-    "Accent Background": "#ffc107",
-    "Emphasis": "#ffc107",
-    "Border": "#dc3545"
+    "Text": "ffffff",
+    "Background": "008000",
+    "Dark": "ffc107",
+    "Primary": "0d6efd",
+    "Secondary": "6c757d",
+    "Danger": "dc3545",
+    "Warning": "ffc107",
+    "Secondary": "ffc107",
+    "Accent": "ffc107",
+    "Accent Background": "ffc107",
+    "Emphasis": "ffc107",
+    "Border": "dc3545"
   }
 }

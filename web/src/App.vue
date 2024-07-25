@@ -8,13 +8,14 @@
   </div>
 
 <!-- Begin page content -->
-<main class="">
+<div class="">
   <RouterView />
-</main>
+</div>
 </template>
 
 <script setup>
   import { ref, onMounted, watch } from 'vue'
+  import { storeToRefs } from 'pinia'
   import Header from '@/components/Header.vue'
   import mermaid from 'mermaid'
 
@@ -40,6 +41,7 @@
   import { useThemeStore } from '@/stores/theme'
 
   const themes = useThemeStore()
+  const { chosen } = storeToRefs(themes)
 
   onMounted(() => {
     mermaid.initialize({
@@ -51,7 +53,7 @@
         useMaxWidth: 0
       }
     })
-    themes.updateColors()
+    themes.changeTheme(chosen.value)
   })
 </script>
 

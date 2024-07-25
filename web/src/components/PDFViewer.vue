@@ -31,7 +31,6 @@
   const totalPages = ref(0)
 
   const resizeObserver = new ResizeObserver(() => {
-    console.log("Resize observered")
     getPage()
   })
 
