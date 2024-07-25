@@ -46,7 +46,7 @@ job "resume-webserver" {
 
       template {
         data = <<EOF
-S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
+S3_BUCKET={{ with secret "kv/data/test/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
         EOF
 
         destination = "secrets/env"
@@ -60,15 +60,15 @@ S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s
       }
 
       service {
-        name = "portfolio"
+        name = "test-portfolio"
         provider = "consul"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.resume-portfolio-https.tls=true",
-          "traefik.http.routers.resume-portfolio-https.entrypoints=websecure",
-          "traefik.http.routers.resume-portfolio-https.tls.certresolver=myresolver",
-          "traefik.http.routers.resume-portfolio-https.tls.domains[0].main=resume.test.tipene.dev",
-          "traefik.http.routers.resume-portfolio-https.rule=Host(`resume.test.tipene.dev`)",
+          "traefik.http.routers.test-resume-portfolio-https.tls=true",
+          "traefik.http.routers.test-resume-portfolio-https.entrypoints=websecure",
+          "traefik.http.routers.test-resume-portfolio-https.tls.certresolver=myresolver",
+          "traefik.http.routers.test-resume-portfolio-https.tls.domains[0].main=resume.test.tipene.dev",
+          "traefik.http.routers.test-resume-portfolio-https.rule=Host(`resume.test.tipene.dev`)",
         ]
         port = "web"
       }
