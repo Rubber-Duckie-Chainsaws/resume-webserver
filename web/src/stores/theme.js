@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { hex2rgb } from '@/composables/global.js'
+import { useStorage } from '@vueuse/core'
 import * as R from 'ramda'
 
 const THEME_PARTS = [
@@ -68,7 +69,7 @@ const THEME_PARTS = [
 export const useThemeStore = defineStore('theme', {
   state: () => {
     return {
-      chosen: "default-theme",
+      chosen: useStorage('chosenTheme', "default-theme"),
       availableThemes: ["default-theme"],
       currentTheme: [
         {
@@ -241,10 +242,10 @@ export const useThemeStore = defineStore('theme', {
     },
     changeTheme(themeName) {
       this.chosen = themeName
-      console.log(themeName)
-      console.log(this.themes)
       if (R.has(themeName, this.themes)) {
         this.currentTheme = R.clone(this.themes[themeName])
+      } else {
+        this.fetchTheme(themeName)
       }
       this.updateColors()
     },
@@ -272,8 +273,9 @@ export const useThemeStore = defineStore('theme', {
         })
         .catch((error) => console.log("Error", error))
     },
-    submitTheme(name, description) {
-      const URL = "/themes"
+    submitTheme(name, description, update=false) {
+      const URL = update ? "/themes/"+name : "/themes"
+      console.log(URL)
 
       const colors = R.reduce((acc, {name, colorValue, ...rest}, ) => {
         acc[name] = colorValue
@@ -287,11 +289,23 @@ export const useThemeStore = defineStore('theme', {
         "Colors": colors
       }
 
-      fetch(URL, {
-        method: "POST",
+      fetch(encodeURI(URL), {
+        method: update ? "PUT" : "POST",
         headers: new Headers({'content-type': 'application/json'}),
         body: JSON.stringify(payload)
       })
+    },
+  },
+  getters: {
+    modified(state) {
+      if (state.themes[state.chosen]) {
+        return R.equals(
+          R.pluck('colorValue', R.sortBy(R.prop('name'), state.themes[state.chosen])),
+          R.pluck('colorValue', R.sortBy(R.prop('name'), state.currentTheme))
+        )
+      } else {
+        return false
+      }
     },
   }
 })

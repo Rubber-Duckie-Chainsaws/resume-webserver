@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import '@/styles/global.css'
+//import '@/styles/wireframe.css' // For debugging weird layouts
 import App from './App.vue'
 import 'vite/modulepreload-polyfill'
 
@@ -76,11 +77,8 @@ import { VueShowdownPlugin } from 'vue-showdown'
 createApp(App)
   .use(router)
   .use(pinia)
-  .use(PrimeVue, {
-    theme: {
-      preset: Aura
-    }
-  })
+  .use(PrimeVue, {theme:{preset: Aura}})
+  //.use(PrimeVue, {unstyled: true})
   .use(VueShowdownPlugin, {
     flavor: 'github',
   })

@@ -53,6 +53,9 @@ export function rgb2hsl(r,g,b) {
 }
 
 export function hex2rgb(hex) {
+  if (R.equals("#", R.head(hex))) {
+    hex = R.tail(hex)
+  }
   return R.map(x => parseInt(x, 16), R.splitEvery(2, hex))
 }
 
@@ -60,21 +63,41 @@ export function rgb2hex(r, g, b) {
   return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
 }
 
-export function hsl2hex(hsl) {
-  const rgb1 = hsl2rgb(...hsl)
-  const hsl1 = rgb2hsl(...rgb1)
-  const hex1 = rgb2hex(...rgb1)
-  const rgb2 = hex2rgb(hex1)
-  const hsl2 = rgb2hsl(...rgb2)
+export function hsl2hex(hsl, debug=false) {
+  if (debug) {
+    const rgb1 = hsl2rgb(...hsl)
+    const hsl1 = rgb2hsl(...rgb1)
+    const hex1 = rgb2hex(...rgb1)
+    const rgb2 = hex2rgb(hex1)
+    const hsl2 = rgb2hsl(...rgb2)
+    console.log(`hsl2hex: ${hsl}`)
+    console.log(`hsl to rgb: ${rgb1}`)
+    console.log(`rgb back to hsl: ${hsl1}`)
+    console.log(`rgb to hex: ${hex1}`)
+    console.log(`hex returning to rgb: ${rgb2}`)
+    console.log(`returnted rgb back to hsl: ${hsl2}`)
+    const actual = rgb2hex(...hsl2rgb(...hsl))
+    console.log(`Actual returned value: ${actual}`)
+  }
   return rgb2hex(...hsl2rgb(...hsl))
 }
 
-export function hex2hsl(hex) {
-  const rgb1 = hex2rgb(hex)
-  const hex1 = rgb2hex(...rgb1)
-  const hsl1 = rgb2hsl(...rgb1)
-  const rgb2 = hsl2rgb(...hsl1)
-  const hex2 = rgb2hex(...rgb2)
+export function hex2hsl(hex, debug=false) {
+  if (debug) {
+    const rgb1 = hex2rgb(hex)
+    const hex1 = rgb2hex(...rgb1)
+    const hsl1 = rgb2hsl(...rgb1)
+    const rgb2 = hsl2rgb(...hsl1)
+    const hex2 = rgb2hex(...rgb2)
+    console.log(`hex2hsl: ${hex}`)
+    console.log(`hex to rgb: ${rgb1}`)
+    console.log(`rgb back to hex: ${hex1}`)
+    console.log(`rgb to hsl: ${hsl1}`)
+    console.log(`hsl returning to rgb: ${rgb2}`)
+    console.log(`returnted rgb back to hex: ${hex2}`)
+    const actual = rgb2hsl(...hex2rgb(hex))
+    console.log(`Actual returned value: ${actual}`)
+  }
   return rgb2hsl(...hex2rgb(hex))
 }
 

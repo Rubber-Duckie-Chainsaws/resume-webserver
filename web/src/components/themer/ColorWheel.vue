@@ -1,34 +1,26 @@
 <template>
-  <div>
-    <div class="toolGrid">
-      <div class="container">
-        <canvas ref="wheel" :width="size" :height="size" style="border: 1px solid black;"></canvas>
-        <canvas ref="harmonies" :width="size" :height="size"></canvas>
-        <canvas ref="interaction" :width="size" :height="size" @click="handleColorSelect"></canvas>
-      </div>
-      <div class="previous-swatches">
-        <Swatch v-for="(swatch, index) in swatchHistory" :color="swatch.color" :favourite="swatch.favourite" @favourited="swatch.favourite = !swatch.favourite" @previousSelected="previousSelected" :key="index" />
-      </div>
-      <div class="controls">
-        <Slider v-model="saturation" @change="saturationChange" :min=0 :max=1 :step="0.01" />
-      </div>
-      <div class="swatches">
-        <div class="col types">
-          <input @keyup.enter="selectedColor = inputColor" v-model.lazy="inputColor" />
-          <div style="display: flex; flex-direction: column">
-            <SelectButton v-model="selectedAuxillary" :options="['monochrome', 'analogous', 'triad', 'complement', 'split']" />
-          </div>
-        </div>
-        <div class="col display">
-          <TransitionGroup v-if="swatches" class="harmonies" name="swatches" tag="div">
-            <div v-for="(swatch, idx) in swatches" @click="() => previousSelected(swatch)" @contextmenu="showContext(idx, swatch, $event)" :key="swatch" :style="{ margin: '10px', padding: '3em', background: swatch, border: '1px solid black' }">
-              {{ swatch }}
-              <ContextMenu ref="menus" :model="items" />
-            </div>
-          </TransitionGroup>
-        </div>
+  <div class="toolGrid">
+    <div class="container">
+      <canvas ref="wheel" :width="size" :height="size" style="border: 1px solid black;"></canvas>
+      <canvas ref="harmonies" :width="size" :height="size"></canvas>
+      <canvas ref="interaction" :width="size" :height="size" @click="handleColorSelect"></canvas>
+    </div>
+    <div class="previous-swatches">
+      <Swatch v-for="(swatch, index) in swatchHistory" :rounded="false" :color="swatch.color" :favourite="swatch.favourite" @favourited="swatch.favourite = !swatch.favourite" @previousSelected="previousSelected" :key="index" />
+    </div>
+    <div class="controls">
+      <Slider class="saturation" v-model="saturation" @change="saturationChange" :min=0 :max=1 :step="0.01" />
+      <input @keyup.enter="selectedColor = inputColor" v-model.lazy="inputColor" />
+      <div class="toggles">
+        <SelectButton v-model="selectedAuxillary" :options="['monochrome', 'analogous', 'triad', 'complement', 'split']" />
       </div>
     </div>
+    <TransitionGroup v-if="swatches" class="harmonies" name="swatches" tag="div">
+      <div v-for="(color, idx) in swatches" @click="showContext(idx, color, $event)" :key="color" >
+        <Swatch :color="R.tail(color)" :canFavourite="false" :showColor="true" />
+        <ContextMenu ref="menus" :model="items" />
+      </div>
+  </TransitionGroup>
   </div>
 </template>
 
@@ -43,7 +35,7 @@
   import { rgb2hsl, hex2rgb, rgb2hex, hsl2rgb, hsl2hex, hex2hsl, toRadians, radiansToXY } from '@/composables/global.js'
   import * as R from 'ramda'
 
-  const emit = defineEmits(['colorSelected'])
+  const emit = defineEmits(['colorSelected', 'colorDesired'])
   const props = defineProps({
     size: Number,
     fields: Array
@@ -75,7 +67,7 @@
 
   function showContext(idx, swatch, event) {
     applyingColor.value = swatch
-    menus.value[idx].show(event)
+    menus.value[idx].show(event, swatch)
   }
 
   function handleColorSelect(event) {
@@ -102,9 +94,8 @@
     if (color == selectedColor.value) {
       console.log("Doing nothing, it's already this color")
     } else {
-      const hsl = hex2hsl(color.slice(1))
-      const restoredColor = hsl2hex(hsl, true)
-      const coords = radiansToXY(toRadians(hsl[0]), canvasCenter.value*hsl[1])
+      const hsl = hex2hsl(color)
+      const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
       const eventStub = {offsetX: coords[0]+canvasCenter.value, offsetY: coords[1]+canvasCenter.value}
       handleColorSelect(eventStub)
     }
@@ -180,7 +171,8 @@
   }
 
   function addToHistory(colorValue) {
-    if (!R.any(R.map(R.propEq(colorValue, 'color'), previousSwatches.value))) {
+    colorValue = R.tail(colorValue)
+    if (R.any(R.whereEq({color: colorValue}), previousSwatches.value)) {
       return
     }
     var appending = {color: colorValue, favourite: false}
@@ -209,16 +201,27 @@
   })
 
   const items = computed(() => {
-    return R.map((x) => {
-      return {
-        label: x,
+    return [
+      {
+        "label": "Pick color",
         command: () => {
           if (applyingColor.value != null) {
-            emit('colorSelected', x, applyingColor.value.slice(1))
+            previousSelected(applyingColor.value.slice(1))
           }
         }
+      },
+      {
+        "label": "Save to...",
+        "items": R.map((x) => ({
+          label: x,
+          command: () => {
+            if (applyingColor.value != null) {
+              emit('colorSelected', x, applyingColor.value.slice(1))
+            }
+          }
+        }), props.fields)
       }
-    }, props.fields)
+    ]
   })
 
   const canvasCenter = computed(() => {
@@ -295,38 +298,76 @@
 <style scoped>
   .container {
     position: relative;
+    margin: auto;
     height: v-bind(sizePx);
     width: v-bind(sizePx);
+    grid-column: span 2;
   }
 
   .toolGrid {
-    display: grid;
-    grid-template-columns: minmax(v-bind(toolGridSize), 2fr) minmax(160px, 1fr);
-    grid-column-gap: 20px;
-  }
-
-  .controls {
-    grid-column: span 3;
-    padding: 2em;
+    display: contents;
   }
 
   .previous-swatches {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(4, 1fr);
+    grid-column: span 2;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, minmax(120px, 1fr));
     grid-gap: 20px;
   }
 
-  .swatches {
+  .controls {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    & .saturation {
+      grid-column: span 2;
+    }
+  }
+
+  .toggles {
+    grid-column: span 2;
     display: flex;
-    flex-direction: column;
-    width: 100%;
-    & .types {
-      flex: 1 0 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @container (min-width: 590px) {
+    .container {
+      margin: 0;
     }
-    & .display {
-      flex: 1 0 0;
+
+    .previous-swatches {
+      grid-column: span 1;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(4, 1fr);
     }
+
+    .controls {
+      grid-column: span 3;
+    }
+
+    .toggles {
+      grid-column: span 3;
+    }
+
+    .harmonies {
+      grid-column: span 3;
+    }
+  }
+
+  @container (min-width: 780px) {
+  }
+
+  .harmonies {
+    grid-column: span 3;
+    grid-row: span 2;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    grid-gap: 10px;
+    min-height: 360px;
   }
 
   .swatches-move, /* apply transition to moving elements */
@@ -341,10 +382,6 @@
     transform: translateX(30px);
   }
 
-  .harmonies {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
 
   .container-fill {
     min-width: v-bind(sizePx);

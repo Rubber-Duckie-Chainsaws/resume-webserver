@@ -24,6 +24,7 @@
 
 <style scoped>
   .grid-2 {
+    height: 100%;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
   }

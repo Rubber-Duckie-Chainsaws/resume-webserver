@@ -1,7 +1,7 @@
 {
 	"Name":"Pixie Vomit",
 	"Description":"God awful pastel purple",
-	"System":"",
+	"System":"true",
 	"Version":"v1.0.0",
 	"Colors":{
       "Accent":"7f82c8",

@@ -1,7 +1,9 @@
 <template>
   <header :class="headerClass">
     <nav class="navbar-container" >
-      <slot name="brand"></slot>
+      <h1 class="navbar-brand">
+        <slot name="brand"></slot>
+      </h1>
       <button
         type="button"
         class="hamburger-toggle navbar-toggle"
@@ -108,14 +110,19 @@ a, a:visited, a:hover, a:active {
   grid-template-rows: 1fr;
 }
 
+.navbar-brand {
+  padding: 0.2em;
+  margin: 0;
+  font-weight: bold;
+  font-size: 28px;
+  min-width: 100px;
+}
+
 :slotted(.navbar-brand) {
   display: flex;
   flex: 0 0 0;
   align-items: center;
-  min-width: 100px;
-  font-weight: bold;
-  font-size: 18px;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 @media only screen and (min-width: 768px) {

@@ -1,6 +1,6 @@
 <template>
   <div class="themer-grid">
-    <aside class="themer col">
+    <aside class="themer">
       <button
           class="hamburger-toggle themerator-toggle"
           style="width: 100px;"
@@ -15,7 +15,7 @@
         <ColorTool />
       </div>
     </aside>
-    <main class="col-2 themed">
+    <main class="dummy-content themed">
       <Header :links="testLinks">
         <template #brand>
           <a class="navbar-brand" href="#">Brand link</a>
@@ -88,17 +88,18 @@
 
 <style scoped>
   .themer {
-    position: relative;
+    /*position: relative;*/
+    flex: 1 1 auto;
   }
 
   .themer-popover {
     position: absolute;
-    top: 60px;
-    height: 90vh;
+    top: 120px;
     background: white;
     visibility: hidden;
     overflow: hidden;
-    transition: grid-template-rows 1200ms ease-in-out, visibility 800ms;
+    transition: all 800ms ease-in-out;
+    max-width: 0;
     display: grid;
     grid-template-rows: 0fr;
   }
@@ -107,12 +108,18 @@
     visibility: visible;
     overflow-y: scroll;
     grid-template-rows: 1fr;
+    max-width: 100vw;
   }
 
   .themer-grid {
     display: grid;
-    grid-template-columns: 1fr 4fr;
+    grid-template-columns: min-content auto;
     grid-column-gap: 10px;
+  }
+
+
+  .dummy-content {
+    flex: 2 0 0;
   }
 
   .content-grid {
@@ -132,7 +139,13 @@
     }
   }
 
-  @media only screen and (min-width: 992px) {
+  @media only screen and (min-width: 1200px) {
+    .themer-grid {
+      display: grid;
+      grid-template-columns: minmax(395px, 800px) auto;
+      grid-column-gap: 10px;
+    }
+
     .themer {
       position: static;
     }
@@ -144,6 +157,8 @@
       visibility: visible;
       overflow-y: scroll;
       grid-template-rows: 1fr;
+      width: 100%;
+      max-width: 100vw;
     }
 
     .flex-container {
