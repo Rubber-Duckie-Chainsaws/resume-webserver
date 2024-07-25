@@ -16,6 +16,7 @@ import (
 const defaultPort string = "3000"
 const defaultEnv string = "DEVELOPMENT"
 const defaultRoot string = "./web/"
+const defaultThemeRoot string = "./web/themes"
 
 type Record struct {
 	Name           string
@@ -32,6 +33,7 @@ type Config struct {
 	Port      string
 	DeployEnv string
 	Root      string
+	ThemeRoot string
 }
 
 var serverConfig Config
@@ -54,10 +56,16 @@ func setServerConfigs() Config {
 		root = defaultRoot
 	}
 
+	themeRoot := os.Getenv("THEME_ROOT")
+	if root == "" {
+		root = defaultThemeRoot
+	}
+
 	return Config{
 		Port:      port,
 		Root:      root,
 		DeployEnv: deployEnv,
+		ThemeRoot: themeRoot,
 	}
 }
 
