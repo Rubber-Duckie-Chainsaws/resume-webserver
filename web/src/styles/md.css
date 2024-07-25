@@ -1,0 +1,26 @@
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  .flex-container > * {
+    padding: 1rem;
+  }
+
+  body {
+    background: rebeccapurple;
+  }
+
+  .button-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-gap: 10px;
+  }
+
+  .col-shrink { flex: 0 1 0; }
+  .col-shrink-2 { flex: 0 2 0; }
+  .col-shrink-3 { flex: 0 3 0; }
+  .col-shrink-4 { flex: 0 4 0; }
+  .col-shrink-5 { flex: 0 5 0; }
+  .col-shrink-6 { flex: 0 6 0; }
+  .col-shrink-7 { flex: 0 7 0; }
+  .col-shrink-8 { flex: 0 8 0; }
+}
