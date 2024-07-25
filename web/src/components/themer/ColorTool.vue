@@ -80,7 +80,7 @@
     } else {
       console.log("Add toast here")
     }
-    svaing = false
+    saving.value = false
   }
 
   function reloadColors() {
