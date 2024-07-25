@@ -68,7 +68,7 @@ func ThemeCtx(next http.Handler) http.Handler {
 }
 
 func (t *Theme) save() error {
-	filename := filepath.Join(serverConfig.Root, "themes", t.Name+".json")
+	filename := filepath.Join(serverConfig.ThemeRoot, t.Name+".json")
 	byteArray, err := json.Marshal(t)
 	if err != nil {
 		log.Fatal("Unable to marshal data: ", err)
@@ -119,13 +119,13 @@ func RestRoutes(router *chi.Mux) {
 }
 
 func getThemes(writer http.ResponseWriter, request *http.Request) {
-	foundFiles, err := filepath.Glob(filepath.Join(serverConfig.Root, "themes", "*.json"))
+	foundFiles, err := filepath.Glob(filepath.Join(serverConfig.ThemeRoot, "*.json"))
 	if err != nil {
 		log.Fatal("Error trying to glob themes directory: ", err)
 	}
 	var response []string
 	for _, x := range foundFiles {
-		shortened, err := filepath.Rel(filepath.Join(serverConfig.Root, "themes"), x)
+		shortened, err := filepath.Rel(serverConfig.ThemeRoot, x)
 		if err != nil {
 			log.Fatal("Error getting relative path: ", err)
 		}
