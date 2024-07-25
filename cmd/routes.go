@@ -44,7 +44,7 @@ func ThemeCtx(next http.Handler) http.Handler {
 		var err error
 
 		if themeName := chi.URLParam(request, "theme"); themeName != "" {
-			themeFile, err := os.ReadFile(filepath.Join(serverConfig.Root, "themes", fmt.Sprintf("%s.json", themeName)))
+			themeFile, err := os.ReadFile(filepath.Join(serverConfig.ThemeRoot, fmt.Sprintf("%s.json", themeName)))
 			if err != nil {
 				log.Print("Failed reading theme file", err)
 				//render.Render(writer, request, ErrNotFound)
