@@ -8,7 +8,7 @@
   </div>
 
 <!-- Begin page content -->
-<div class="">
+<div class="pageContent">
   <RouterView />
 </div>
 </template>
