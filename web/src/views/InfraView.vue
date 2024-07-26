@@ -1,8 +1,8 @@
 <template>
   <div class="themed">
-    <Header :links="links">
+    <Header :primary="false" :center="true" :links="links">
       <template #brand>
-        Infra overview
+        <a href="#" @click.prevent.stop="" style="cursor: default">Infra overview</a>
       </template>
     </Header>
     <router-view v-slot="{ Component }">
@@ -13,6 +13,8 @@
     <ProjectComponent projectName="Discord launcher">
       <template #default>
         <h4>Status: Planning</h4>
+        <p>Stuff and things</p>
+        more stuff
       </template>
     </ProjectComponent>
   </div>

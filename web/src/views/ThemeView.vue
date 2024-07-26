@@ -12,18 +12,39 @@
         <span class="icon-bar"></span>
       </button>
       <div class="themer-popover">
-        <ColorTool />
+        <SelectButton v-model="showingTool" :options="['colors', 'settings']" />
+        <ColorTool v-if="showingTool == 'colors'"/>
+        <SettingTool v-if="showingTool == 'settings'" />
       </div>
     </aside>
     <main class="dummy-content themed">
-      <Header :links="testLinks">
+      <Header :links="testLinks" :rightAlign="false">
+        <template #brand>
+          <a class="navbar-brand" href="#">Brand link</a>
+        </template>
+      </Header>
+      <Header :links="testLinks" :primary="false" :rightAlign="false">
         <template #brand>
           <a class="navbar-brand" href="#">Brand link</a>
         </template>
       </Header>
       <h1>Sample webpage</h1>
       <div class="content-grid">
-        <div class="">
+        <div class="decorated">
+          <ul>
+            <li>Callout</li>
+            <li>Should stand out</li>
+            <li>Or otherwise be visually interesting</li>
+            <li class="accent">
+              Accent
+              <ul>
+                <li>More</li>
+                <li>Nested</li>
+                <li>Values</li>
+              </ul>
+            </li>
+            <li>Closing point</li>
+          </ul>
           <p>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed cursus iaculis risus non porta. Vestibulum faucibus lorem leo, eget euismod enim varius id. Nulla ultrices sapien non mattis placerat. Sed tincidunt turpis quis purus imperdiet, at scelerisque metus lacinia. Donec volutpat in orci id pellentesque. Etiam vestibulum lectus vel semper accumsan. Cras nibh metus, ultrices vel mollis nec, vulputate ut orci. Integer ut fringilla lorem. Maecenas aliquam, ligula sed volutpat hendrerit, libero sem aliquam justo, nec vulputate risus diam ac nisi. Ut eu diam mi.
           </p>
@@ -43,10 +64,12 @@
         <div class="sidebar">
           <h3>Sidebar content</h3>
           <div class="button-group">
-            <button class="btn btn-primary">Primary</button>
-            <button class="btn btn-success">Success</button>
-            <button class="btn btn-danger">Danger</button>
-            <button class="btn btn-warning">Warning</button>
+            <Button class="primary">Primary</button>
+            <Button class="secondary">Secondary</Button>
+            <Button class="success">Success</button>
+            <Button class="danger">Danger</button>
+            <Button class="warning">Warning</button>
+            <Button class="info">Info</button>
           </div>
         </div>
       </div>
@@ -55,12 +78,15 @@
 </template>
 
 <script setup>
+  import SelectButton from 'primevue/selectbutton'
   import Popover from 'primevue/popover'
   import ColorTool from '@/components/themer/ColorTool.vue'
+  import SettingTool from '@/components/themer/SettingTool.vue'
   import Header from '@/components/Header.vue'
   import { ref, onMounted, watch } from 'vue'
   import * as R from 'ramda'
 
+  const showingTool = ref("colors")
   const themerToggle = ref()
   const testLinks = [
     {
@@ -95,6 +121,7 @@
   .themer-popover {
     position: absolute;
     top: 120px;
+    padding-top: 10px;
     background: white;
     visibility: hidden;
     overflow: hidden;

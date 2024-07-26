@@ -57,8 +57,8 @@ func setServerConfigs() Config {
 	}
 
 	themeRoot := os.Getenv("THEME_ROOT")
-	if root == "" {
-		root = defaultThemeRoot
+	if themeRoot == "" {
+		themeRoot = defaultThemeRoot
 	}
 
 	return Config{

@@ -16,7 +16,7 @@ import Nomad from '@/views/infra/Nomad.vue'
 import GHAAutoscaler from '@/views/infra/GHAAutoscaler.vue'
 import Resume from '@/views/infra/Resume.vue'
 import OpsView from '@/views/OpsView.vue'
-import Themer from '@/views/Themer.vue'
+import ThemeView from '@/views/ThemeView.vue'
 
 const routes = [
   { path: '/', component: CoverView },
@@ -39,7 +39,7 @@ const routes = [
     ]
   },
   { path: '/ops', component: OpsView },
-  { path: '/themer', component: Themer },
+  { path: '/themer', component: ThemeView },
 ]
 
 const router = createRouter({
@@ -74,6 +74,9 @@ const pinia = createPinia()
 \**********************************/
 import { VueShowdownPlugin } from 'vue-showdown'
 
+
+import Button from '@/components/Button.vue'
+
 createApp(App)
   .use(router)
   .use(pinia)
@@ -82,4 +85,5 @@ createApp(App)
   .use(VueShowdownPlugin, {
     flavor: 'github',
   })
+  .component('Button', Button)
   .mount('#app')
