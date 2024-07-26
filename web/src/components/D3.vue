@@ -279,11 +279,6 @@
           x2 = target.x, y2 = target.y,
           middleX = (x1 + x2 + parseInt(x1 <= x2 ? source.width : target.width)) / 2,
           middleY = (y1 + y2 + parseInt(y1 <= y2 ? source.height : target.height)) / 2
-    if (source.name == "me" || target.name == "me" ) {
-      console.log(`${source.name}: [${x1}, ${y1}], width: ${source.width}, height: ${source.height}`)
-      console.log(`${target.name}: [${x2}, ${y2}], width: ${target.width}, height: ${target.height}`)
-      console.log("Middle: ", middleX, middleY)
-    }
     return [middleX, middleY]
   }
 

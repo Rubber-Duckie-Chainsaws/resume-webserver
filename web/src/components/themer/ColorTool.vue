@@ -5,6 +5,13 @@
       <div class="grid">
         <Select class="theme-picker" v-model="chosen" :options="themes.availableThemes" placeholder="Select a theme" @before-show="themes.fetchAvailable" @change="loadTheme" />
         <SplitButton label="Reload" @click="reloadColors" :model="saveList" />
+        <Dialog v-model:visible="confirm" modal header="Confirm overwrite">
+          <div>
+            <h3>{{ chosen }}</h3>
+            <button @click="cancelSave">Cancel</button>
+            <button @click="saveTheme">Save</button>
+          </div>
+        </Dialog>
         <Dialog v-model:visible="saving" modal header="Save new template...">
           <div>
             <h3>Theme Name</h3>
@@ -29,6 +36,7 @@
 <script setup>
   import { ref, onMounted, computed } from 'vue'
   import { storeToRefs } from 'pinia'
+  import { useToast } from 'primevue/usetoast'
   import ColorPalette from '@/components/themer/ColorPalette.vue'
   import ColorWheel from '@/components/themer/ColorWheel.vue'
   import SplitButton from 'primevue/splitbutton'
@@ -44,12 +52,14 @@
   const themeDescription = ref("")
   const canvasSize = ref(360)
   const saving = ref(false)
+  const confirm = ref(false)
+  const toast = useToast()
 
   const saveList = [
     {
       label: "Save",
       command: () => {
-        themes.submitTheme(chosen.value, "", true)
+        confirm.value = true
       }
     },
     {
@@ -66,6 +76,7 @@
 
   function cancelSave() {
     saving.value = false
+    confirm.value = false
     themeName.value = ""
     themeDescription.value = ""
   }
@@ -77,10 +88,16 @@
   function sendTheme() {
     if (themeName.value != "" && themeDescription.value != "") {
       themes.submitTheme(themeName.value, themeDescription.value)
+      saving.value = false
     } else {
-      console.log("Add toast here")
+      toast.add({ severity: 'error', summary: 'Empty Fields', detail: 'Both theme name and theme description need to be filled in', life:3000})
     }
-    saving.value = false
+  }
+
+  function saveTheme() {
+      themes.submitTheme(chosen.value, "", true)
+      confirm.value = false
+      saving.value = false
   }
 
   function reloadColors() {

@@ -18,6 +18,7 @@
       </div>
     </aside>
     <main class="dummy-content themed">
+      <Toast />
       <Header :links="testLinks" :rightAlign="false">
         <template #brand>
           <a class="navbar-brand" href="#">Brand link</a>
@@ -80,6 +81,7 @@
 <script setup>
   import SelectButton from 'primevue/selectbutton'
   import Popover from 'primevue/popover'
+  import Toast from 'primevue/toast'
   import ColorTool from '@/components/themer/ColorTool.vue'
   import SettingTool from '@/components/themer/SettingTool.vue'
   import Header from '@/components/Header.vue'

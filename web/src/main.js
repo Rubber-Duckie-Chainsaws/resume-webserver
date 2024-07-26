@@ -57,6 +57,7 @@ const router = createRouter({
 
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
+import ToastService from 'primevue/toastservice'
 
 
 /**********************************\
@@ -81,6 +82,7 @@ createApp(App)
   .use(router)
   .use(pinia)
   .use(PrimeVue, {theme:{preset: Aura}})
+  .use(ToastService)
   //.use(PrimeVue, {unstyled: true})
   .use(VueShowdownPlugin, {
     flavor: 'github',
