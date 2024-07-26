@@ -93,9 +93,9 @@ export const useThemeStore = defineStore('theme', {
       availableThemes: ["default-theme"],
       currentTheme: {
         configs: {
-          primaryHeader: "primary",
-          secondaryHeader: "dark",
-          headerAlignment: "left"
+          primaryHeader: {value: "primary", options: ["primary", "dark", "lighty"]},
+          secondaryHeader: {value: "dark", options: ["primary", "dark", "lighty"]},
+          headerAlignment: {value: "left", options: ["left", "right"]}
         },
         colors: [
           {
@@ -107,38 +107,32 @@ export const useThemeStore = defineStore('theme', {
           {
             name: 'Background',
             description: 'The color of the background',
-            colorValue: 'dbf4f4',
+            colorValue: 'ffffff',
             varName: '--background-color',
           },
           {
-            name: 'Secondary',
-            description: 'For things that should pop out',
-            colorValue: '065b5f',
-            varName: '--secondary-color',
-          },
-          {
-            name: 'Secondary Background',
+            name: 'Callout',
             description: 'For areas that should pop out',
-            colorValue: '6d9e9e',
-            varName: '--secondary-background',
+            colorValue: 'c4c4c4',
+            varName: '--callout-color',
           },
           {
             name: 'Accent',
             description: 'For things that need to be set apart',
-            colorValue: '89dadb',
+            colorValue: '828282',
             varName: '--accent-color',
-          },
-          {
-            name: 'Accent Background',
-            description: 'For areas that need a bit of contrast',
-            colorValue: '7feeff',
-            varName: '--accent-background',
           },
           {
             name: 'Primary',
             description: 'Primary interaction color',
             colorValue: '005eff',
             varName: '--primary-color',
+          },
+          {
+            name: 'Secondary',
+            description: 'For things that should pop out',
+            colorValue: '636363',
+            varName: '--secondary-color',
           },
           {
             name: 'Success',
@@ -159,94 +153,119 @@ export const useThemeStore = defineStore('theme', {
             varName: '--danger-color',
           },
           {
-            name: 'Emphasis',
-            description: 'Crisp',
-            varName: '--emphasis-color',
-            colorValue: 'ffc107',
+            name: 'Info',
+            description: 'For areas that need a bit of contrast',
+            colorValue: '7feeff',
+            varName: '--info-color',
           },
           {
             name: 'Border',
             description: 'Standard border color',
             varName: '--border-color',
-            colorValue: 'dc3545',
+            colorValue: '000000',
+          },
+          {
+            name: 'Light',
+            description: 'Standard border color',
+            varName: '--light-color',
+            colorValue: '303030',
+          },
+          {
+            name: 'Dark',
+            description: 'Standard border color',
+            varName: '--dark-color',
+            colorValue: '000000',
           },
         ],
       },
       themes: {
-        "default-theme": [
-          {
-            name: 'Text',
-            description: 'The color of the main text',
-            varName: '--body-color',
-            colorValue: '000000',
+        "default-theme": {
+          configs: {
+            primaryHeader: {value: "primary", options: ["primary", "dark", "lighty"]},
+            secondaryHeader: {value: "dark", options: ["primary", "dark", "lighty"]},
+            headerAlignment: {value: "left", options: ["left", "right"]}
           },
-          {
-            name: 'Background',
-            description: 'The color of the background',
-            varName: '--background-color',
-            colorValue: 'dbf4f4',
-          },
-          {
-            name: 'Secondary',
-            description: 'For things that should pop out',
-            varName: '--secondary-color',
-            colorValue: '065b5f',
-          },
-          {
-            name: 'Secondary Background',
-            description: 'For areas that should pop out',
-            varName: '--secondary-background',
-            colorValue: '6d9e9e',
-          },
-          {
-            name: 'Accent',
-            description: 'For things that need to be set apart',
-            varName: '--accent-color',
-            colorValue: '89dadb',
-          },
-          {
-            name: 'Accent Background',
-            description: 'For areas that need a bit of contrast',
-            varName: '--accent-background',
-            colorValue: '7feeff',
-          },
-          {
-            name: 'Primary',
-            description: 'Primary interaction color',
-            varName: '--primary-color',
-            colorValue: '005eff',
-          },
-          {
-            name: 'Success',
-            description: 'Used to signify positive result',
-            varName: '--success-color',
-            colorValue: '00850d',
-          },
-          {
-            name: 'Warning',
-            description: 'Used to signify attention needed',
-            varName: '--warning-color',
-            colorValue: 'ffd000',
-          },
-          {
-            name: 'Danger',
-            description: 'Used to signify a negative result',
-            varName: '--danger-color',
-            colorValue: 'c70000',
-          },
-          {
-            name: 'Emphasis',
-            description: 'Crisp',
-            varName: '--emphasis-color',
-            colorValue: 'ffc107',
-          },
-          {
-            name: 'Border',
-            description: 'Standard border color',
-            varName: '--border-color',
-            colorValue: 'dc3545',
-          },
-        ],
+          colors: [
+            {
+              name: 'Text',
+              description: 'The color of the main text',
+              colorValue: '000000',
+              varName: '--body-color',
+            },
+            {
+              name: 'Background',
+              description: 'The color of the background',
+              colorValue: 'ffffff',
+              varName: '--background-color',
+            },
+            {
+              name: 'Callout',
+              description: 'For areas that should pop out',
+              colorValue: 'c4c4c4',
+              varName: '--callout-color',
+            },
+            {
+              name: 'Accent',
+              description: 'For things that need to be set apart',
+              colorValue: '828282',
+              varName: '--accent-color',
+            },
+            {
+              name: 'Primary',
+              description: 'Primary interaction color',
+              colorValue: '005eff',
+              varName: '--primary-color',
+            },
+            {
+              name: 'Secondary',
+              description: 'For things that should pop out',
+              colorValue: '636363',
+              varName: '--secondary-color',
+            },
+            {
+              name: 'Success',
+              description: 'Used to signify positive result',
+              colorValue: '00850d',
+              varName: '--success-color',
+            },
+            {
+              name: 'Warning',
+              description: 'Used to signify attention needed',
+              colorValue: 'ffd000',
+              varName: '--warning-color',
+            },
+            {
+              name: 'Danger',
+              description: 'Used to signify a negative result',
+              colorValue: 'c70000',
+              varName: '--danger-color',
+            },
+            {
+              name: 'Info',
+              description: 'For areas that need a bit of contrast',
+              colorValue: '7feeff',
+              varName: '--info-color',
+            },
+            {
+              name: 'Border',
+              description: 'Standard border color',
+              varName: '--border-color',
+              colorValue: '000000',
+            },
+            {
+              name: 'Light',
+              description: 'Standard border color',
+              varName: '--light-color',
+              colorValue: '303030',
+            },
+            {
+              name: 'Dark',
+              description: 'Standard border color',
+              varName: '--dark-color',
+              colorValue: '000000',
+            },
+          ],
+        },
       }
     }
   },
