@@ -1,4 +1,4 @@
-job "resume-webserver" {
+job "test-resume-webserver" {
   datacenters = ["aws-NYC-1"]
   type = "service"
 
@@ -39,14 +39,14 @@ job "resume-webserver" {
       env {
         PORT = "${NOMAD_PORT_web}"
         DEPLOY_ENV="PRODUCTION"
-        THEME_ROOT="{NOMAD_TASK_DIR}/themes"
+        THEME_ROOT="${NOMAD_TASK_DIR}/themes"
         ROOT = "/app"
         AWS_DEFAULT_REGION="us-east-1"
       }
 
       template {
         data = <<EOF
-S3_BUCKET={{ with secret "kv/data/test/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
+S3_BUCKET={{ with secret "kv/data/test/test-resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
         EOF
 
         destination = "secrets/env"
