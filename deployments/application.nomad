@@ -50,7 +50,7 @@ S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s
       }
 
       config {
-        image = "434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:latest"
+        image = "434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:v1"
         ports = ["web"]
       }
 
