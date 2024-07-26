@@ -26,23 +26,26 @@
           </g>
           <g class="everything"
              :transform="gTransform.toString()">
-            <g class="links">
-              <line v-for="(link, index) in data.links"
+            <g class="links" v-for="(link, index) in data.links">
+              <line
                     :x1="getNode(link.source).x+(getNode(link.source).width/2)"
                     :y1="getNode(link.source).y+(getNode(link.source).height/2)"
                     :x2="getNode(link.target).x+(getNode(link.target).width/2)"
                     :y2="getNode(link.target).y+(getNode(link.target).height/2)"
                     stroke="black"
                     stroke-width="2px"></line>
+              <text
+                :x="calculateHalfpoint(link.source, link.target)[0]"
+                :y="calculateHalfpoint(link.source, link.target)[1]">{{ link.verb }}</text>
             </g>
             <g class="focus-bounds" v-if="scope !== 'system'">
-            <rect x="10"
-                  y="160"
-                  fill="none"
-                  stroke="black"
-                  stroke-width="2px"
-                  :width="(d3Svg.width.baseVal.value - 270)"
-                  :height="(d3Svg.height.baseVal.value - 180)" />
+              <rect x="10"
+                    y="160"
+                    fill="none"
+                    stroke="black"
+                    stroke-width="2px"
+                    :width="(d3Svg.width.baseVal.value - 270)"
+                    :height="(d3Svg.height.baseVal.value - 180)" />
             </g>
             <g v-if="testing" class="test-nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in testNodes">
               <rect x="0"
@@ -260,58 +263,28 @@
       svg.transition().duration(600).call(
         zoom.transform, centered
       )
-      //const _simulation = d3.forceSimulation(data.value.nodes)
-      //    .force("x0", d3.forceX())
-      //    .force("y0", d3.forceY())
-      //    .force("x", d3.forceX(_width).strength(d => {
-      //      switch(d.type) {
-      //        case "user":
-      //          return 0.01
-      //          break
-      //        case "system":
-      //          return 0.01
-      //          break;
-      //        case "container":
-      //          return 0.05
-      //          break;
-      //        case "component":
-      //          return 0.08
-      //        default:
-      //          return 0.03
-      //      }
-      //    }))
-      //    .force("y", d3.forceY(_height).strength(d => {
-      //      switch(d.type) {
-      //        case "user":
-      //          return 0.01
-      //          break
-      //        case "system":
-      //          return 0.09
-      //          break;
-      //        case "container":
-      //          return 0.05
-      //          break;
-      //        case "component":
-      //          return 0.08
-      //        default:
-      //          return 0.03
-      //      }
-      //    }))
-      //    .force("manyBody", d3.forceManyBody().strength(-3500))
-      //    // This doesn't work, bigly, and I'm not sure why :(
-      //    //.force("links", d3.forceLink(data.value.links).id(d => d.name).strength(-2).distance(20).iterations(10))
-      //    .force("collide", d3.forceCollide(150))
-      //    .on("end", () => {
-      //      loaded.value = true
-      //    })
-        //return _simulation
-      }
+    }
   }
 
   function clicked(name, newScope) {
     selected.value = name
     scope.value = newScope
     simulation.value = getSimulation()
+  }
+
+  function calculateHalfpoint(sourceName, targetName) {
+    const source = getNode(sourceName),
+          target = getNode(targetName),
+          x1 = source.x, y1 = source.y,
+          x2 = target.x, y2 = target.y,
+          middleX = (x1 + x2 + parseInt(x1 <= x2 ? source.width : target.width)) / 2,
+          middleY = (y1 + y2 + parseInt(y1 <= y2 ? source.height : target.height)) / 2
+    if (source.name == "me" || target.name == "me" ) {
+      console.log(`${source.name}: [${x1}, ${y1}], width: ${source.width}, height: ${source.height}`)
+      console.log(`${target.name}: [${x2}, ${y2}], width: ${target.width}, height: ${target.height}`)
+      console.log("Middle: ", middleX, middleY)
+    }
+    return [middleX, middleY]
   }
 
   const testNodes = computed(() => {
