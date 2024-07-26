@@ -328,9 +328,8 @@ export const useThemeStore = defineStore('theme', {
         acc[name] = colorValue
         return acc
       }, {}, this.currentTheme.colors)
-      const configs = R.reduce((acc, {name, value, ...rest}) => ({[name]: value}),
-        {},
-        R.toPairs(this.currentTheme.configs))
+      const configs = R.reduce((acc, [name, {value, ...rest}]) => R.mergeLeft(acc, {[name]: value}),
+        {}, R.toPairs(this.currentTheme.configs))
 
       const payload = {
         "Name": name,
@@ -339,8 +338,6 @@ export const useThemeStore = defineStore('theme', {
         "Configs": configs,
         "Colors": colors
       }
-
-      console.log(payload)
 
       fetch(encodeURI(URL), {
         method: update ? "PUT" : "POST",
