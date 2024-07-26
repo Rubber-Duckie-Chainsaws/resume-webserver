@@ -22,10 +22,14 @@ jobs:
           docker tag resume-webserver/webserver:latest 434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:develop
           docker push 434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:develop
 
-      - id: apply
-        name: Plan Nomad Job File
-        run: |
-          OUTPUT=$(nomad job run "deployments/testing.nomad")
-          echo "output<<EOF" >> $GITHUB_OUTPUT
-          echo "${OUTPUT}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+# TODO: Resolve permissions issue
+#       - As it stands I think granting blanket run permissions to exposed GHA runners
+#         is probably a bad move. So for the time being the runners can't modify jobs and
+#         I have to run them by hand
+#      - id: apply
+#        name: Plan Nomad Job File
+#        run: |
+#          OUTPUT=$(nomad job run "deployments/testing.nomad")
+#          echo "output<<EOF" >> $GITHUB_OUTPUT
+#          echo "${OUTPUT}" >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
