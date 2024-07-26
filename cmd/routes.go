@@ -159,6 +159,7 @@ func updateTheme(writer http.ResponseWriter, request *http.Request) {
 		log.Fatal(err)
 	}
 	theme.Colors = data.Colors
+	theme.Configs = data.Configs
 	theme.save()
 	writer.WriteHeader(http.StatusOK)
 	fmt.Fprintf(writer, "OK")
