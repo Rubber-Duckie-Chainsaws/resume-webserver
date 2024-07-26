@@ -15,12 +15,12 @@
         <SelectButton v-model="selectedAuxillary" :options="['monochrome', 'analogous', 'triad', 'complement', 'split']" />
       </div>
     </div>
-    <TransitionGroup v-if="swatches" class="harmonies" name="swatches" tag="div">
+    <div v-if="swatches" class="harmonies">
       <div v-for="(color, idx) in swatches" @click="showContext(idx, color, $event)" :key="color" >
         <Swatch :color="R.tail(color)" :canFavourite="false" :showColor="true" />
         <ContextMenu ref="menus" :model="items" />
       </div>
-  </TransitionGroup>
+    </div>
   </div>
 </template>
 
@@ -52,7 +52,7 @@
   const saturation = ref(0.5)
   const inputColor = ref()
   const selectedColor = ref()
-  const selectedAuxillary = ref('monochrome')
+  const selectedAuxillary = ref('')
   var ctx = null
   const sizePx = props.size+'px'
   const menus = ref()
@@ -63,6 +63,9 @@
   // Handlers
   function saturationChange() {
     drawCircle(segmentCount.value)
+    const hsl = hex2hsl(selectedColor.value)
+    const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
+    selectOnColorWheel(...coords)
   }
 
   function showContext(idx, swatch, event) {
@@ -73,21 +76,25 @@
   function handleColorSelect(event) {
     const x = event.offsetX
     const y = event.offsetY
-    const fixedX = x - (props.size / 2)
-    const fixedY = y - (props.size / 2)
-    const radius = Math.sqrt(fixedX**2 + fixedY**2)
-    clearBullseyes(interaction)
+    const coords = [x - canvasCenter.value, y - canvasCenter.value]
+    selectOnColorWheel(...coords)
     clearBullseyes(harmonies)
+    addToHistory(selectedColor.value)
+  }
+
+  function selectOnColorWheel(x, y) {
+    const radius = Math.sqrt(x**2 + y**2)
+    clearBullseyes(interaction)
     addBullseye(x, y, 12, interaction)
 
-    const radians = Math.atan2(fixedY, fixedX)
+    const radians = Math.atan2(y, x)
+    // We get back -PI >= x > PI, when we want 0 >= x > 2*PI
     const fixedRadians = radians < 0 ? 2*Math.PI + radians : radians
     const degrees = fixedRadians * (180 / Math.PI)
 
     const hsl = [degrees, saturation.value, (1-radius/canvasCenter.value * 0.5)]
 
     selectedColor.value = rgb2hex(...hsl2rgb(...hsl))
-    addToHistory(selectedColor.value)
   }
 
   function previousSelected(color) {
@@ -96,8 +103,8 @@
     } else {
       const hsl = hex2hsl(color)
       const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
-      const eventStub = {offsetX: coords[0]+canvasCenter.value, offsetY: coords[1]+canvasCenter.value}
-      handleColorSelect(eventStub)
+      saturation.value = hsl[1]
+      selectOnColorWheel(...coords)
     }
   }
 
@@ -110,6 +117,8 @@
   }
 
   function addBullseye(x, y, radius, targetCanvas) {
+    x = x + canvasCenter.value
+    y = y + canvasCenter.value
     ctx = targetCanvas.value.getContext('2d')
 
     const outerRadius = radius
@@ -170,6 +179,13 @@
     wheel.value.getContext('2d').drawImage(wheel.value.offscreenCanvas, 0, 0)
   }
 
+
+
+  // Utility Functions
+  function addHue(hue, degrees) {
+    return hue + degrees > 0 ? (hue + degrees) % 360 : 360 - (Math.abs(degrees) - hue)
+  }
+
   function addToHistory(colorValue) {
     colorValue = R.tail(colorValue)
     if (R.any(R.whereEq({color: colorValue}), previousSwatches.value)) {
@@ -187,16 +203,13 @@
     previousSwatches.value = R.append(appending, previousSwatches.value)
   }
 
-
-
-  // Utility Functions
-  function addHue(hue, degrees) {
-    return hue + degrees > 0 ? (hue + degrees) % 360 : 360 - (Math.abs(degrees) - hue)
-  }
+  watch(saturation, () => {
+    drawCircle(segmentCount.value)
+  })
+  watch(selectedAuxillary, () => clearBullseyes(harmonies))
 
 
   onMounted(() => {
-    drawCircle(segmentCount.value)
     drawCircle(segmentCount.value)
   })
 
@@ -206,6 +219,7 @@
         "label": "Pick color",
         command: () => {
           if (applyingColor.value != null) {
+            addToHistory(applyingColor.value)
             previousSelected(applyingColor.value.slice(1))
           }
         }
@@ -216,6 +230,7 @@
           label: x,
           command: () => {
             if (applyingColor.value != null) {
+              addToHistory(applyingColor.value)
               emit('colorSelected', x, applyingColor.value.slice(1))
             }
           }
@@ -248,7 +263,7 @@
       case "analogous":
         var leftAnalogue = R.map((x) => [addHue(hsl[0], (-1*x*22)), hsl[1], hsl[2]], R.range(1, 3))
         var rightAnalogue = R.map((x) => [addHue(hsl[0], (x*22)), hsl[1], hsl[2]], R.range(1, 3))
-        return [leftAnalogue, rightAnalogue]
+        return [R.reverse(leftAnalogue), rightAnalogue]
         break;
       case "triad":
         var leftAnalogue = [addHue(hsl[0], -120), hsl[1], hsl[2]]
@@ -274,15 +289,19 @@
     if (selectedColor.value == "" || selectedColor.value == null) {
       return []
     }
-    if (interaction.value && auxilaries.value.length > 0) {
-      const targets = R.unnest(auxilaries.value)
-      clearBullseyes(harmonies)
-      for (var i = 0; i < targets.length; i++) {
-        const hsl = targets[i]
-        const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
-        addBullseye(coords[0]+canvasCenter.value, coords[1]+canvasCenter.value, 8, harmonies)
+    if (interaction.value) {
+      if (auxilaries.value.length > 0) {
+        const targets = R.unnest(auxilaries.value)
+        clearBullseyes(harmonies)
+        for (var i = 0; i < targets.length; i++) {
+          const hsl = targets[i]
+          const coords = radiansToXY(toRadians(hsl[0]), (2 - (2*hsl[2]))*canvasCenter.value)
+          addBullseye(coords[0], coords[1], 8, harmonies)
+        }
+        return R.reduce(R.concat, [], [R.map(hsl2hex, auxilaries.value[0]), [selectedColor.value], R.map(hsl2hex, auxilaries.value[1])])
+      } else {
+        return [selectedColor.value]
       }
-      return R.reduce(R.concat, [], [R.map(hsl2hex, auxilaries.value[0]), [selectedColor.value], R.map(hsl2hex, auxilaries.value[1])])
     }
   })
 

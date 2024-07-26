@@ -25,16 +25,23 @@
 <style scoped>
   .grid-2 {
     height: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+    display: flex;
+    flex-flow: row wrap;
+    /*display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));*/
   }
 
   .resume {
-    max-width: 800px;
+    flex: 2 0 420px;
+    width: 100%;
+    min-width: 768px;
+    order: 2;
     margin: 0 2em;
   }
 
   .cover-letter {
+    flex: 1 1 calc(768px - (420px + 1em));
+    order: 1;
     & p:first-of-type:first-letter {
       -webkit-initial-letter: 2;
       initial-letter: 2;
@@ -44,5 +51,17 @@
 
   .flex-fill {
     flex: 1 1 auto;
+  }
+
+  @media only screen and (min-width: 768px) {
+    .cover-letter {
+      order: 2;
+    }
+
+    .resume {
+      order: 1;
+      max-width: 1000px;
+      min-width: 420px;
+    }
   }
 </style>

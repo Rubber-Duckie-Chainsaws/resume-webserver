@@ -19,6 +19,7 @@ type Theme struct {
 	Description string
 	System      string
 	Version     string
+	Configs     map[string]string
 	Colors      map[string]string
 }
 

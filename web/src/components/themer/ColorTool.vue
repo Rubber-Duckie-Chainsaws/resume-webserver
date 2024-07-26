@@ -3,7 +3,7 @@
     <div class="responsive-container">
       <h3>Theme Selector</h3>
       <div class="grid">
-        <Select class="theme-picker" v-model="chosen" :options="themes.availableThemes" placeholder="Select a theme" @change="loadTheme" />
+        <Select class="theme-picker" v-model="chosen" :options="themes.availableThemes" placeholder="Select a theme" @before-show="themes.fetchAvailable" @change="loadTheme" />
         <SplitButton label="Reload" @click="reloadColors" :model="saveList" />
         <Dialog v-model:visible="saving" modal header="Save new template...">
           <div>
@@ -15,10 +15,10 @@
             <button @click="sendTheme">Save</button>
           </div>
         </Dialog>
-        <ColorWheel @colorSelected="colorChosen" :fields="R.map(R.prop('name'), currentTheme)" :size="canvasSize"></ColorWheel>
+        <ColorWheel @colorSelected="colorChosen" :fields="R.map(R.prop('name'), currentTheme.colors)" :size="canvasSize"></ColorWheel>
         <div class="color-palette">
-          <div style="margin: 0.8em 3px;" v-for="(themePart, idx) in currentTheme">
-            <ColorPalette v-model="currentTheme[idx]" @colorSelected="colorChosen" />
+          <div style="margin: 0.8em 3px;" v-for="(themePart, idx) in currentTheme.colors">
+            <ColorPalette v-model="currentTheme.colors[idx]" @colorSelected="colorChosen" />
           </div>
         </div>
       </div>
