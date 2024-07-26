@@ -97,6 +97,7 @@ func main() {
 		log.Fatal(err)
 	}
 	s.Start()
+	log.Print("Starting server")
 	http.ListenAndServe(fmt.Sprintf(":%s", serverConfig.Port), router)
 }
 
