@@ -1,17 +1,17 @@
 <template>
   <div ref="canvasWrapper" class="position-relative canvasWrapper">
-    <nav class="w-100 navbar navbar-expand-sm bg-body-secondary interface">
-      <button class="btn btn-primary" @click="prevPage">
+    <nav class="navbar navbar-expand-sm bg-body-secondary interface">
+      <button :class="currentPage == 1 ? 'primary' : 'light'" :disabled="currentPage == 1" @click="prevPage">
         Back
         <i class="bi bi-arrow-left"></i>
       </button>
       <p class="navbar-text">{{ currentPage }} of {{ totalPages }}</p>
-      <button class="btn btn-primary" @click="nextPage">
+      <button :class="currentPage == totalPages ? 'primary' : 'light'" :disabled="currentPage == totalPages" @click="nextPage">
         <i class="bi bi-arrow-right"></i>
         Next
       </button>
     </nav>
-    <canvas class="w-100 h-100" ref="pdfCanvas"></canvas>
+    <canvas class="" ref="pdfCanvas"></canvas>
   </div>
 </template>
 
@@ -107,6 +107,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  background: var(--primary-color);
 }
 
 .canvasWrapper {
@@ -116,5 +117,10 @@
 .canvasWrapper:hover .interface {
   display: flex;
   justify-content: space-between
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
 }
 </style>

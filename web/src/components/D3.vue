@@ -136,6 +136,8 @@
     updateSimulation()
   })
 
+  const say = R.tap((x) => console.log(x))
+
   onMounted(() => {
     resizeObserver.observe(d3Svg.value)
     svg = d3.select(d3Svg.value)
@@ -332,32 +334,102 @@
   })
 
   const data = computed(() => {
+    const { compose, pluck, filter, reject, map, includes } = R
     let _data = {}
+
+    const nodesByName = R.pluck('name')
+    const inScope = R.includes(R.__, scopesUsed.value)
+    const isIncluded = R.filter(R.isNotEmpty(selected.value) ? R.pipe(R.propEq(selected.value, 'parent')) : R.pipe(R.prop('type'), inScope))
+
+    // Fix this later I guess
+    const inScope2 = filter(compose(
+      includes(R.__, scopesUsed.value),
+      R.prop('type'),
+    ))
+    const outScope = reject(compose(
+      includes(R.__, scopesUsed.value),
+      R.prop('type'),
+    ))
+
+    const pickSelected = R.filter((R.isNotEmpty(selected.value)) ? R.propEq(selected.value, 'parent') : R.T)
+    const newFiltered = R.into([], R.compose(pickSelected, inScope2), props.payload.nodes)
+
+    const refineNodes = (nodes, links, selected) => {
+      const linkRelevant = R.curry((links, {name}) =>
+        R.filter(R.anyPass(R.map(R.propEq(name))(['target', 'source'])), links)
+      )
+      const linkTargets = R.chain(R.props(['source', 'target']))
+      const isTargeted = R.curry((nodes, targets) => R.filter(R.compose(
+          includes(R.__, targets),
+          R.prop('name'),
+        ), nodes))
+      const pickSelected = R.filter((R.isNotEmpty(selected)) ? R.propEq(selected, 'parent') : R.T)
+      const newFiltered = inScope2(nodes)
+      const linksFiltered = R.chain(linkRelevant(links))
+      const removeFiltering = R.into([], R.compose(
+          inScope2,
+          R.lift(say)(R.pipe(pickSelected, linksFiltered, linkTargets, R.uniq)),
+        ), nodes)
+      console.log(removeFiltering)
+      //const selectedNodes = R.converge(isTargeted, [R.identity, R.pipe(pickSelected, linksFiltered, linkTargets, R.uniq)])(newFiltered)
+          //pickSelected,
+          //linksFiltered,
+          //linkTargets,
+          //R.uniq,
+          //isTargeted(newFiltered),
+        //), newFiltered)
+      //console.log(selectedNodes)
+
+
+      //console.log(newFiltered)
+      /*console.log(R.into([], R.compose(
+        R.compose(
+          inscope2,
+          pickSelected),
+        R.converge(isTargeted, [R.identity, linkTargets(R.chain(linkReleveant(links)))])
+      ), nodes)*/
+
+      //console.log(newFiltered)
+      //console.log(linksFiltered)
+      //console.log(linkTargets(linksFiltered))
+      //console.log(isTargeted(newFiltered, linkTargets(linksFiltered)))
+    }
+
+    //refineNodes(props.payload.nodes, props.payload.links, selected.value)
     if (props.payload !== {}) {
+
+      _data.nodes = isIncluded(props.payload.nodes)
       if (selected.value) {
-        const selected_nodes = R.filter(R.propEq(selected.value, 'parent'), props.payload.nodes)
-        _data.links = R.filter(
-          x => R.or(
-            R.includes(R.prop('source', x), R.map(R.prop('name'), selected_nodes)),
-            R.includes(R.prop('target', x), R.map(R.prop('name'), selected_nodes))
+        const selected_nodes = isIncluded(props.payload.nodes)
+        //const selected_nodes = R.filter(R.propEq(selected.value, 'parent'), props.payload.nodes)
+        _data.links = R.filter(R.compose(
+            R.isNotEmpty,
+            R.intersection(nodesByName(selected_nodes)),
+            R.props(['source', 'target'])
           ), props.payload.links)
         const linked_nodes = R.map( x => R.flatten(R.filter(y => R.includes(R.prop('name', y), [x.target, x.source]), props.payload.nodes)), _data.links)
         _data.nodes = R.uniq(R.concat(selected_nodes, R.flatten(linked_nodes)))
         _data.nodes = R.filter(x => R.includes(R.prop('type', x), scopesUsed.value), _data.nodes)
       } else {
-        _data.nodes = R.filter(x => R.includes(R.prop('type', x), scopesUsed.value), props.payload.nodes)
-        _data.links = R.filter(
-          x => R.or(
-            R.includes(R.prop('source', x), R.map(R.prop('name'), _data.nodes)),
-            R.includes(R.prop('target', x), R.map(R.prop('name'), _data.nodes))
+        _data.links = R.filter(R.compose(
+            R.isNotEmpty,
+            R.intersection(nodesByName(_data.nodes)),
+            R.props(['source', 'target'])
           ), props.payload.links)
       }
     }
     _data.links = R.map(({target, source, ...rest}) => {
       return {...rest, "target": R.prop('name', getNode(target, _data.nodes)), "source": R.prop('name', getNode(source, _data.nodes))}
     }, _data.links)
-    _data.nodes = R.map(({name, ...rest}) => {
-      return {...rest, "name": name, children: R.pipe(R.filter(R.propEq(name, "parent")), R.pluck("name"))(props.payload.nodes)}
+    _data.nodes = R.map(({name, type, ...rest}) => {
+      return {
+        ...rest,
+        type: type,
+        "name": name,
+        children: R.pipe(R.filter(R.propEq(name, "parent")), R.pluck("name"))(props.payload.nodes),
+        width: settings.value[type].x.size,
+        height: settings.value[type].y.size,
+      }
     }, _data.nodes)
     return _data
   })

@@ -122,7 +122,7 @@
 
   .themer-popover {
     position: absolute;
-    top: 120px;
+    top: 137px;
     padding-top: 10px;
     background: white;
     visibility: hidden;
