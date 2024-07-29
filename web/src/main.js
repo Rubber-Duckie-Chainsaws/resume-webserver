@@ -1,11 +1,6 @@
-import 'bootstrap/js/dist/button'
-import 'bootstrap/js/dist/modal'
-import 'bootstrap/js/dist/collapse'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import 'bootstrap-icons/font/bootstrap-icons.css'
-
 import { createApp } from 'vue'
-import './style.css'
+import '@/styles/global.css'
+//import '@/styles/wireframe.css' // For debugging weird layouts
 import App from './App.vue'
 import 'vite/modulepreload-polyfill'
 
@@ -21,6 +16,7 @@ import Nomad from '@/views/infra/Nomad.vue'
 import GHAAutoscaler from '@/views/infra/GHAAutoscaler.vue'
 import Resume from '@/views/infra/Resume.vue'
 import OpsView from '@/views/OpsView.vue'
+import ThemeView from '@/views/ThemeView.vue'
 
 const routes = [
   { path: '/', component: CoverView },
@@ -43,6 +39,7 @@ const routes = [
     ]
   },
   { path: '/ops', component: OpsView },
+  { path: '/themer', component: ThemeView },
 ]
 
 const router = createRouter({
@@ -52,15 +49,43 @@ const router = createRouter({
   routes,
 })
 
+
+/**********************************\
+ *           PrimeVue             *
+ * TODO: Move to own package/file *
+\**********************************/
+
+import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
+import ToastService from 'primevue/toastservice'
+
+
+/**********************************\
+ *            Pinia               *
+ * TODO: Move to own package/file *
+\**********************************/
+
+import { createPinia } from 'pinia'
+
+const pinia = createPinia()
+
 /**********************************\
  *           Showdown             *
  * TODO: Move to own package/file *
 \**********************************/
 import { VueShowdownPlugin } from 'vue-showdown'
 
+
+import Button from '@/components/Button.vue'
+
 createApp(App)
   .use(router)
+  .use(pinia)
+  .use(PrimeVue, {theme:{preset: Aura}})
+  .use(ToastService)
+  //.use(PrimeVue, {unstyled: true})
   .use(VueShowdownPlugin, {
     flavor: 'github',
   })
+  .component('Button', Button)
   .mount('#app')

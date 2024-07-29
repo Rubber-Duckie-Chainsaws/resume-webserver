@@ -101,9 +101,30 @@
 
   const json_data = {
       "nodes":[
-        {"name":"me", "type": "user", "width": "240", "height": "140", "x": 0, "y": 0, "description": "Me. Tipene. Hybrid developer/operator/user"},
+        {"name":"me", "type": "user", "description": "Me. Tipene. Hybrid developer/operator/user"},
+        {"name": "PR Author", "type": "user", "description": "User on github who submits a new PR"},
+        {"name": "GHA Autoscaler", "type": "system", "description": "Responsible for creating new GHA build workers on demand"},
+        {"name": "Monitoring", "type": "system", "description": "Prometheus/Grafana cluster monitoring/observibility"},
+        {"name": "Resume Hosting", "type": "system", "description": "What's responsible for this very site", "context": `
+## Golang + Chi powered REST API
+
+- Server the /themes/ endpoints
+- proxies s3 requests to statically serve Resume.pdf
+- Hosts the /dist for the Vue Spa app
+`},
+        {"name": "Github Webhook Listener", "type": "container", "parent": "GHA Autoscaler", "description": "Simple flask app to receive webhooks. Dispatches via rabbit to a celery worker queue"},
+        {"name": "Celery worker", "type": "container", "parent": "GHA Autoscaler", "description": "Celery worker which starts new build workers"},
+        {"name": "Vue SPA", "type": "container", "parent": "Resume Hosting", "description": "This website. Vite + Vue powered web app"},
+        {"name": "Golang Webserver", "type": "container", "parent": "Resume Hosting", "description": "Simple golang webserver to deliver the website, proxy calls for the pdf through s3 and respond to basic API queries", "context": `
+## Golang + Chi powered REST API
+
+- Server the /themes/ endpoints
+- proxies s3 requests to statically serve Resume.pdf
+- Hosts the /dist for the Vue Spa app
+`},
       ],
       "links":[
+        {"source": "PR Author", "target": "Github Webhook Listener", "verb": "triggers"},
       ],
       "groups":[
       ],

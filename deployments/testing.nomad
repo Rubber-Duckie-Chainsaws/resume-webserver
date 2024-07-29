@@ -1,4 +1,4 @@
-job "resume-webserver" {
+job "test-resume-webserver" {
   datacenters = ["aws-NYC-1"]
   type = "service"
 
@@ -7,7 +7,12 @@ job "resume-webserver" {
     value = "worker"
   }
 
-  namespace = "prod"
+  namespace = "test"
+
+  # Forces runs (to trigger a redeploy)
+  meta {
+    run_uuid = "${uuidv4()}"
+  }
 
   group "webserver" {
 
@@ -16,7 +21,6 @@ job "resume-webserver" {
       size = 300
       sticky = true
     }
-
 
     network {
       port "web" {
@@ -42,7 +46,7 @@ job "resume-webserver" {
 
       template {
         data = <<EOF
-S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
+S3_BUCKET={{ with secret "kv/data/test/test-resume-webserver/config" }}{{.Data.data.s3}}{{ end }}
         EOF
 
         destination = "secrets/env"
@@ -50,20 +54,21 @@ S3_BUCKET={{ with secret "kv/data/prod/resume-webserver/config" }}{{.Data.data.s
       }
 
       config {
-        image = "434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:v1"
+        image = "434190342226.dkr.ecr.us-east-1.amazonaws.com/resume-webserver/webserver:develop"
         ports = ["web"]
+        force_pull = true
       }
 
       service {
-        name = "portfolio"
+        name = "test-portfolio"
         provider = "consul"
         tags = [
           "traefik.enable=true",
-          "traefik.http.routers.resume-portfolio-https.tls=true",
-          "traefik.http.routers.resume-portfolio-https.entrypoints=websecure",
-          "traefik.http.routers.resume-portfolio-https.tls.certresolver=myresolver",
-          "traefik.http.routers.resume-portfolio-https.tls.domains[0].main=resume.tipene.dev",
-          "traefik.http.routers.resume-portfolio-https.rule=Host(`resume.tipene.dev`)",
+          "traefik.http.routers.test-resume-portfolio-https.tls=true",
+          "traefik.http.routers.test-resume-portfolio-https.entrypoints=websecure",
+          "traefik.http.routers.test-resume-portfolio-https.tls.certresolver=myresolver",
+          "traefik.http.routers.test-resume-portfolio-https.tls.domains[0].main=resume.test.tipene.dev",
+          "traefik.http.routers.test-resume-portfolio-https.rule=Host(`resume.test.tipene.dev`)",
         ]
         port = "web"
       }

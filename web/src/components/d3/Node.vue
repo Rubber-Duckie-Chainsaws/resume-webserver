@@ -10,9 +10,9 @@
           :height="node.height+'px'">
     </rect>
     <foreignObject x="0" y="0" :width="node.width+'px'" :height="node.height+'px'">
-      <div class="d-flex flex-column align-items-center">
-        <h4 class="pb-0 mb-0">{{ node.name }}</h4>
-        <p><em>Container</em></p>
+      <div class="node">
+        <h4>{{ node.name }}</h4>
+        <p><em>{{ modelType }}</em></p>
         <p style="text-align: center">{{ node.description }}</p>
       </div>
     </foreignObject>
@@ -20,6 +20,9 @@
 </template>
 
 <script setup>
+  import { computed } from 'vue'
+  import * as R from 'ramda'
+
   const props = defineProps({
     node: Object,
     color: String
@@ -32,14 +35,15 @@
       emit('focus-change', props.node.name, 'container')
     }
   }
+
+  const modelType = computed(() => {
+    return R.head(props.node.type).toUpperCase() + R.tail(props.node.type)
+  })
 </script>
 
 <style scoped>
-.interactable {
-  cursor: pointer;
-}
-
-.plain {
-  cursor: default;
+.node {
+  color: white !important;
+  text-shadow: 2px 2px 5px black;
 }
 </style>

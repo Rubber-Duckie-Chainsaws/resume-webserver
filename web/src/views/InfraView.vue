@@ -1,34 +1,70 @@
 <template>
-  <div>
-    <nav class="navbar navbar-dark bg-dark px-4">
-      <h1 class="navbar-brand">Infra overview</h1>
-      <nav class="nav nav-tabs">
-        <RouterLink class="nav-link" to="/infra/topology">Cluster Topology</RouterLink>
-        <RouterLink class="nav-link" to="/infra/nomad">Nomad Cluster</RouterLink>
-        <RouterLink class="nav-link" to="/infra/gha">GHA Autoscaler</RouterLink>
-        <RouterLink class="nav-link" to="/infra/resume">Resume &#38; this website</RouterLink>
-      </nav>
-    </nav>
+  <div class="themed infra">
+    <Header :primary="false" :center="true" :links="links">
+      <template #brand>
+        <a href="#" @click.prevent.stop="" style="cursor: default">Infra overview</a>
+      </template>
+    </Header>
     <router-view v-slot="{ Component }">
       <transition name="fade">
         <component :is="Component" />
       </transition>
     </router-view>
+    <!--
     <ProjectComponent projectName="Discord launcher">
       <template #default>
         <h4>Status: Planning</h4>
+        <p>Stuff and things</p>
+        more stuff
       </template>
     </ProjectComponent>
+    -->
   </div>
 </template>
 
 <script setup>
+  import Header from '@/components/Header.vue'
   import ProjectComponent from '@/components/ProjectComponent.vue'
+
+  const links = [
+    {
+      "name": "Cluster Topology",
+      "route": "/infra/topology",
+    },
+    {
+      "name": "Nomad Cluster",
+      "route": "/infra/nomad",
+
+    },
+    {
+      "name": "GHA Autoscaler",
+      "route": "/infra/gha",
+
+    },
+    {
+      "name": "Resume & this Website",
+      "route": "/infra/resume",
+
+    },
+  ]
 </script>
 
 <style scoped>
   .row {
     border-top: 1px solid grey;
+  }
+
+  .infra {
+    height: 100vh;
+  }
+
+  .fade-enter-active, .fade-leave-active, .fade-move {
+    transition: all 800ms;
+    opacity: 1;
+  }
+  .fade-enter-from, .fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+    opacity: 0;
+    transform: translateX(80px);
   }
 
   svg text {
