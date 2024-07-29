@@ -1,0 +1,26 @@
+{
+	"Name":"new-arctic",
+	"Description":"with blackjack and hookers",
+	"System":"false",
+	"Version":"v1.0.0",
+	"Configs":{
+      "headerAlignment":"right",
+      "primaryHeader":"primary",
+      "secondaryHeader":"light"
+    },
+	"Colors":{
+      "Text":"b09c7d",
+      "Background":"2d472d",
+      "Callout":"213421",
+      "Accent":"bfbaac",
+      "Primary":"1a181a",
+      "Secondary":"ffffff",
+      "Success":"3e5c45",
+      "Warning":"d47917",
+      "Danger":"c90909",
+      "Info":"2c4282",
+      "Border":"828485",
+      "Dark":"000000",
+      "Light":"aab8ad"
+    }
+}

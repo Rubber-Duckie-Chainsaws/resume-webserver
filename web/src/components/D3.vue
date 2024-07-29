@@ -7,6 +7,7 @@
       <Controls name="system" v-model="settings.system" />
       <Controls name="container" v-model="settings.container" />
       -->
+      <!--<Knob v-model="n_frames" :min="1" :max="340" />-->
         <VueShowdown
           :markdown="context" />
     </div>
@@ -26,17 +27,22 @@
           </g>
           <g class="everything"
              :transform="gTransform.toString()">
-            <g class="links" v-for="(link, index) in data.links">
+            <g class="links" v-for="(link, index) in links">
               <line
-                    :x1="getNode(link.source).x+(getNode(link.source).width/2)"
-                    :y1="getNode(link.source).y+(getNode(link.source).height/2)"
-                    :x2="getNode(link.target).x+(getNode(link.target).width/2)"
-                    :y2="getNode(link.target).y+(getNode(link.target).height/2)"
+                    :x1="getNode(link.source, nodes).x+(getNode(link.source, nodes).width/2)"
+                    :y1="getNode(link.source, nodes).y+(getNode(link.source, nodes).height/2)"
+                    :x2="getNode(link.target, nodes).x+(getNode(link.target, nodes).width/2)"
+                    :y2="getNode(link.target, nodes).y+(getNode(link.target, nodes).height/2)"
                     stroke="black"
                     stroke-width="2px"></line>
-              <text
+              <!--<text
                 :x="calculateHalfpoint(link.source, link.target)[0]"
-                :y="calculateHalfpoint(link.source, link.target)[1]">{{ link.verb }}</text>
+                :y="calculateHalfpoint(link.source, link.target)[1]">{{ link.verb }}</text>-->
+              <!--<text
+                :x="calculateHalfpoint(getNode(link.source, nodes), getNode(link.target, nodes))[0]"
+                :y="calculateHalfpoint(getNode(link.source, nodes), getNode(link.target, nodes))[1]">
+                  {{ link.verb }}
+              </text>-->
             </g>
             <g class="focus-bounds" v-if="scope !== 'system'">
               <rect x="10"
@@ -54,8 +60,14 @@
                     :height="node.height"
                     :fill="node.fill" />
             </g>
-            <g class="nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in data.nodes" v-bind:key="node.name">
+            <g class="nodes" :transform="'translate('+node.x+','+node.y+')'" v-for="(node, index) in nodes" v-bind:key="node.name">
               <Node @focus-change="clicked" :node="node" :color="color(node.type)" />
+              <!--<circle
+                  fill="none"
+                  stroke="black"
+                  :cx="(node.width/2)"
+                  :cy="(node.height/2)"
+                  :r="(Math.sqrt((node.width/2)**2 + (node.height/2)**2))"></circle>-->
             </g>
           </g>
         </svg>
@@ -73,12 +85,14 @@
     }
   })
 
-  import { ref, computed, onMounted, onUnmounted } from 'vue'
+  import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
   import Node from '@/components/d3/Node.vue'
   import Controls from '@/components/d3/Controls.vue'
   import * as R from 'ramda'
   import * as d3 from 'd3'
+
+  import Knob from 'primevue/knob'
 
   const d3Svg = ref(null)
   const gTransform = ref("translate(0, 0) scale(1)")
@@ -92,17 +106,24 @@
   let svg = null
   let zoom = null
   const updateSimulation = debounce(() => getSimulation(), 500)
+  const channelGetter = ref(getChannel())
   const settings = ref({
     user: {
       x: {
         size: 280,
         padding: 70,
         offset: 20,
+        position: 0,
+        bound: R.gt(R.__, 600),
+        fixed: 600,
       },
       y: {
         size: 170,
         padding: 0,
         offset: 20,
+        position: 0,
+        bound: R.gt(R.__, 200),
+        fixed: 200,
       }
     },
     system: {
@@ -110,11 +131,17 @@
         size: 280,
         padding: 0,
         offset: 30,
+        position: 800,
+        bound: R.lt(R.__, 1200),
+        fixed: 1200,
       },
       y: {
         size: 200,
         padding: 120,
         offset: 300,
+        position: 600,
+        bound: R.lt(R.__, 600),
+        fixed: 600,
       }
     },
     container: {
@@ -122,21 +149,31 @@
         size: 300,
         padding: 130,
         offset: 60,
+        position: 50,
+        bound: R.gt(R.__, 750),
+        fixed: 750,
       },
       y: {
         size: 200,
         padding: 160,
         offset: 280,
+        position: 800,
+        bound: R.lt(R.__, 600),
+        fixed: 600,
       }
     }
   })
   const rows              = ref(4)
+  const links = ref([])
+  const n_frames = ref(1)
+  const nodes = ref([])
 
   const resizeObserver = new ResizeObserver(() => {
     updateSimulation()
   })
 
   const say = R.tap((x) => console.log(x))
+  const nodesByName = R.pluck('name')
 
   onMounted(() => {
     resizeObserver.observe(d3Svg.value)
@@ -144,15 +181,18 @@
     zoom = d3.zoom()
         .scaleExtent([0.1, 32])
         .on('zoom', e => {
+          channelGetter.value = getChannel()
           gTransform.value = e.transform
         })
     svg.call(zoom)
     const _width = d3Svg.value.width.baseVal.value
     const _height = d3Svg.value.height.baseVal.value
-    const centered = d3.zoomIdentity
+    /*const centered = d3.zoomIdentity
         .scale(_width/graphicWidth);
-    svg.call(zoom.transform, centered);
-    simulation.value = getSimulation()
+    svg.call(zoom.transform, centered);*/
+    calcLinks()
+    watch(data, calcLinks)
+    watch(n_frames, getSimulation)
   })
 
   onUnmounted(() => {
@@ -182,9 +222,33 @@
       if (parentNode) {
         return parentNode
       } else {
-        return null
+        return {x: 0, y: 0, width: 1, height: 1}
       }
     }
+  }
+
+  function calcLinks() {
+    var _data_links = []
+    _data_links = R.filter(R.compose(
+        R.isNotEmpty,
+        R.intersection(nodesByName(nodes.value)),
+        R.props(['source', 'target'])
+      ), props.payload.links)
+    _data_links = R.map(({target, source, ...rest}) => {
+      const targetNode = getNode(target, data.value.nodes),
+            sourceNode = getNode(source, data.value.nodes),
+            xDiff = Math.abs(targetNode.x, sourceNode.x),
+            yDiff = Math.abs(targetNode.y, sourceNode.y),
+            horizontal = xDiff < yDiff
+      return {
+        ...rest,
+        horizontal: horizontal,
+        target: R.prop('name', getNode(target, data.value.nodes)),
+        source: R.prop('name', getNode(source, data.value.nodes)),
+      }
+    }, _data_links)
+    links.value = _data_links
+    //getSimulation()
   }
 
   function* getPos(type) {
@@ -242,14 +306,55 @@
   }
 
   function getSimulation() {
+    console.log("getSimulation() called")
     if (data !== {}) {
       const _width = d3Svg.value.width.baseVal.value
       const _height = d3Svg.value.height.baseVal.value
+      nodes.value = data.value.nodes.map(d => R.clone(d))
+      const simulation = d3.forceSimulation(nodes.value)
+        //.force("many-body", d3.forceManyBody().strength(-100))
+        //.force("link", d3.forceLink(links.value).id(d => getNode(d.name, nodes.value).name).strength(0.8).distance(200).iterations(30))
+        .force("vertical-sort", d3.forceY(R.pipe(
+            R.prop('type'),
+            R.cond([
+              [R.equals('user'), R.always(200)],
+              [R.equals('system'), R.always(1200)],
+              [R.equals('container'), R.always(1200)],
+              [R.T, R.always(0)]
+            ])
+          )).strength(1)
+        )
+        .force("horizontal-sort", d3.forceX(R.pipe(
+            R.prop('type'),
+            R.cond([
+              [R.equals('user'), R.always(200)],
+              [R.equals('system'), R.always(1200)],
+              [R.equals('container'), R.always(400)],
+              [R.T, R.always(0)]
+            ])
+          )).strength(1)
+        )
+        /*
+        .force("custom-bounding", () => {
+          R.forEach(node => {
+            if (settings.value[node.type].x.bound(node.x)) {
+              node.x = settings.value[node.type].x.fixed
+            }
+            if (settings.value[node.type].y.bound(node.y)) {
+              node.y = settings.value[node.type].y.fixed
+            }
+          }, nodes.value)
+        })
+        */
+        .force("collide", d3.forceCollide((d) => (Math.sqrt((d.width/2)**2 + (d.height/2)**2))).strength(0.6))
+        .stop()
+        .tick(1200)
+      /*
       let posTools = {}
       posTools["user"] = getPos("user")
       posTools["system"] = getPos("system")
       posTools["container"] = getPos("container")
-      data.value.nodes = R.map(({x, y, type, ...rest}) => {
+      nodes.value = R.map(({x, y, type, ...rest}) => {
         const pos = posTools[type].next().value
         return {
           ...rest,
@@ -257,7 +362,9 @@
           "x": pos[0],
           "y": pos[1]
         }
-      }, data.value.nodes)
+      }, nodes.value)
+      */
+      calcLinks()
       const everything = d3.select(d3Svg.value).select(".everything")
       const centered = d3.zoomIdentity
           .translate(0, 0)
@@ -274,13 +381,12 @@
     simulation.value = getSimulation()
   }
 
-  function calculateHalfpoint(sourceName, targetName) {
-    const source = getNode(sourceName),
-          target = getNode(targetName),
-          x1 = source.x, y1 = source.y,
+  function calculateHalfpoint(source, target) {
+    const x1 = source.x, y1 = source.y,
           x2 = target.x, y2 = target.y,
-          middleX = (x1 + x2 + parseInt(x1 <= x2 ? source.width : target.width)) / 2,
-          middleY = (y1 + y2 + parseInt(y1 <= y2 ? source.height : target.height)) / 2
+          shift =
+          middleX = (x1 + x2 + parseInt(x1 <= x2 ? source.width : target.width)) / 4,
+          middleY = (y1 + y2 + parseInt(y1 <= y2 ? source.height : target.height)) / 4
     return [middleX, middleY]
   }
 
@@ -337,7 +443,6 @@
     const { compose, pluck, filter, reject, map, includes } = R
     let _data = {}
 
-    const nodesByName = R.pluck('name')
     const inScope = R.includes(R.__, scopesUsed.value)
     const isIncluded = R.filter(R.isNotEmpty(selected.value) ? R.pipe(R.propEq(selected.value, 'parent')) : R.pipe(R.prop('type'), inScope))
 
@@ -395,44 +500,92 @@
       //console.log(isTargeted(newFiltered, linkTargets(linksFiltered)))
     }
 
+    var _data_links = []
+
     //refineNodes(props.payload.nodes, props.payload.links, selected.value)
     if (props.payload !== {}) {
-
       _data.nodes = isIncluded(props.payload.nodes)
       if (selected.value) {
         const selected_nodes = isIncluded(props.payload.nodes)
         //const selected_nodes = R.filter(R.propEq(selected.value, 'parent'), props.payload.nodes)
-        _data.links = R.filter(R.compose(
+        _data_links = R.filter(R.compose(
             R.isNotEmpty,
             R.intersection(nodesByName(selected_nodes)),
             R.props(['source', 'target'])
           ), props.payload.links)
-        const linked_nodes = R.map( x => R.flatten(R.filter(y => R.includes(R.prop('name', y), [x.target, x.source]), props.payload.nodes)), _data.links)
+        const linked_nodes = R.map( x => R.flatten(R.filter(y => R.includes(R.prop('name', y), [x.target, x.source]), props.payload.nodes)), _data_links)
         _data.nodes = R.uniq(R.concat(selected_nodes, R.flatten(linked_nodes)))
         _data.nodes = R.filter(x => R.includes(R.prop('type', x), scopesUsed.value), _data.nodes)
       } else {
-        _data.links = R.filter(R.compose(
+        _data_links = R.filter(R.compose(
             R.isNotEmpty,
             R.intersection(nodesByName(_data.nodes)),
             R.props(['source', 'target'])
           ), props.payload.links)
       }
     }
-    _data.links = R.map(({target, source, ...rest}) => {
+    _data_links = R.map(({target, source, ...rest}) => {
       return {...rest, "target": R.prop('name', getNode(target, _data.nodes)), "source": R.prop('name', getNode(source, _data.nodes))}
-    }, _data.links)
+    }, _data_links)
     _data.nodes = R.map(({name, type, ...rest}) => {
       return {
         ...rest,
         type: type,
-        "name": name,
+        name: name,
         children: R.pipe(R.filter(R.propEq(name, "parent")), R.pluck("name"))(props.payload.nodes),
         width: settings.value[type].x.size,
         height: settings.value[type].y.size,
+        x: settings.value[type].x.position,
+        y: settings.value[type].y.position,
       }
     }, _data.nodes)
+    channelGetter.value = getChannel()
     return _data
   })
+
+  function getChannel() {
+    var objsUsed = {}
+    var returningX = true
+    const fauxIterator = {
+      getNext(node, isHorizontal = true) {
+        console.log("GetNext called")
+        console.log(`Node: ${node.name}-${node.type}: [${node.x}, ${node.y}]`)
+        if (objsUsed[node.name] == null) {
+          objsUsed[node.name] = {x: 0, y: 0}
+        }
+        if (!isHorizontal) {
+          if(returningX) {
+            returningX = !returningX
+            console.log(`Returning horizontal x value: ${node.x}`)
+            return node.x;
+          } else {
+            returningX = !returningX
+            objsUsed[node.name].y += 1
+            console.log(`Returning horizontal y value: ${node.y + objsUsed[node.name].y * (settings.value[node.type].y.size / 8)}`)
+            return node.y + objsUsed[node.name].y * (settings.value[node.type].y.size / 8)
+          }
+        } else {
+          if(returningX) {
+            returningX = !returningX
+            objsUsed[node.name].x += 1
+            console.log(`Returning vertical x value: ${node.x + objsUsed[node.name].x * (settings.value[node.type].x.size / 8)}`)
+            return node.x + objsUsed[node.name].x * (settings.value[node.type].x.size / 8)
+          } else {
+            returningX = !returningX
+            console.log(`Returning vertical y value: ${node.y}`)
+            return node.y;
+          }
+        }
+      }
+    }
+    return fauxIterator
+  }
+
+  function getRandomInt(min, max) {
+    const minCeiled = Math.ceil(min);
+    const maxFloored = Math.floor(max);
+    return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+  }
 </script>
 
 <style scoped>
