@@ -2,7 +2,7 @@
   <div class="themed">
     <Header :links="appLinks">
       <template #brand>
-        <a class="navbar-brand" href="/">Tipene Moss</a>
+        <RouterLink class="navbar-brand" to="/">Tipene Moss</RouterLink>
       </template>
     </Header>
   </div>
@@ -28,10 +28,10 @@
       name: "Behind the Cover",
       route: "/infra"
     },
-    {
-      name: "Peep thru the Glass",
-      route: "/ops"
-    },
+//    {
+//      name: "Peep thru the Glass",
+//      route: "/ops"
+//    },
     {
       name: "Make it look better",
       route: "/themer"

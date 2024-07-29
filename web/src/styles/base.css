@@ -200,7 +200,6 @@ body {
   margin: 0;
   display: flex;
   min-width: 320px;
-  background: blue;
 }
 
 h1 {
@@ -300,4 +299,8 @@ button > span.icon-bar {
   .col-shrink-6 { flex: 6 0 0; }
   .col-shrink-7 { flex: 7 0 0; }
   .col-shrink-8 { flex: 8 0 0; }
+}
+
+.text-end {
+  align-self: flex-end;
 }

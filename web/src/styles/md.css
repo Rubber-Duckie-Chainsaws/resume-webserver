@@ -4,10 +4,6 @@
     padding: 1rem;
   }
 
-  body {
-    background: rebeccapurple;
-  }
-
   .button-group {
     width: 100%;
     display: grid;

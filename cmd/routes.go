@@ -91,8 +91,6 @@ func DevRoutes(router *chi.Mux) {
 }
 
 func ProdRoutes(router *chi.Mux) {
-	publicFileServer := http.FileServer(http.Dir(filepath.Join(serverConfig.Root, "dist/")))
-	router.Handle("/public/*", http.StripPrefix("/public/", publicFileServer))
 	assetsFileServer := http.FileServer(http.Dir(filepath.Join(serverConfig.Root, "dist/assets")))
 	router.Handle("/assets/*", http.StripPrefix("/assets/", assetsFileServer))
 	AdditionalRoutes(router)
@@ -188,6 +186,8 @@ func saveNewTheme(writer http.ResponseWriter, request *http.Request) {
 }
 
 func AdditionalRoutes(router *chi.Mux) {
+	publicFileServer := http.FileServer(http.Dir(filepath.Join(serverConfig.Root, "dist/")))
+	router.Handle("/public/*", http.StripPrefix("/public/", publicFileServer))
 	router.Get("/s3/*", func(writer http.ResponseWriter, request *http.Request) {
 		key := request.URL.Path[len("/s3/"):]
 

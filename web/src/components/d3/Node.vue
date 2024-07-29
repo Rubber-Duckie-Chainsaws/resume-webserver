@@ -10,7 +10,7 @@
           :height="node.height+'px'">
     </rect>
     <foreignObject x="0" y="0" :width="node.width+'px'" :height="node.height+'px'">
-      <div>
+      <div class="node">
         <h4>{{ node.name }}</h4>
         <p><em>{{ modelType }}</em></p>
         <p style="text-align: center">{{ node.description }}</p>
@@ -42,4 +42,8 @@
 </script>
 
 <style scoped>
+.node {
+  color: white !important;
+  text-shadow: 2px 2px 5px black;
+}
 </style>

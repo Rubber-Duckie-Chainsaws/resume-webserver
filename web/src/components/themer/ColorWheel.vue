@@ -216,7 +216,7 @@
   const items = computed(() => {
     return [
       {
-        "label": "Pick color",
+        "label": "Send to color wheel",
         command: () => {
           if (applyingColor.value != null) {
             addToHistory(applyingColor.value)
@@ -225,7 +225,7 @@
         }
       },
       {
-        "label": "Save to...",
+        "label": "Pick color for...",
         "items": R.map((x) => ({
           label: x,
           command: () => {
@@ -346,7 +346,7 @@
   }
 
   .toggles {
-    grid-column: span 2;
+    grid-column: span 3;
     display: flex;
     align-items: center;
     justify-content: center;
